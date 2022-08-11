@@ -294,9 +294,7 @@ namespace RVO
 
                     if (left < right)
                     {
-                        Agent tempAgent = agents_[left];
-                        agents_[left] = agents_[right - 1];
-                        agents_[right - 1] = tempAgent;
+                        (agents_[left], agents_[right - 1]) = (agents_[right - 1], agents_[left]);
                         ++left;
                         --right;
                     }

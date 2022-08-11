@@ -33,6 +33,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Unity.VisualScripting;
 
 namespace RVO
 {
@@ -110,6 +111,8 @@ namespace RVO
         private int numWorkers_;
         private float globalTime_;
 
+        private HashSet<int> m_IDSet;
+        private IList<Agent> m_WorldAgentList;
         public static Simulator Instance
         {
             get
@@ -128,7 +131,7 @@ namespace RVO
          * <param name="position">The two-dimensional starting position of this
          * agent.</param>
          */
-        public int addAgent(Vector2 position)
+        public int GetDefaultAgent(Vector2 position,bool isAddToAgents = true)
         {
             if (defaultAgent_ == null)
             {
@@ -136,7 +139,9 @@ namespace RVO
             }
 
             Agent agent = new Agent();
-            agent.id_ = agents_.Count;
+            //目前的id是初始化的时候按加入的列表数量，需要替换掉
+            //agents_
+            agent.id_ = m_WorldAgentList.Count;
             agent.maxNeighbors_ = defaultAgent_.maxNeighbors_;
             agent.maxSpeed_ = defaultAgent_.maxSpeed_;
             agent.neighborDist_ = defaultAgent_.neighborDist_;
@@ -145,11 +150,82 @@ namespace RVO
             agent.timeHorizon_ = defaultAgent_.timeHorizon_;
             agent.timeHorizonObst_ = defaultAgent_.timeHorizonObst_;
             agent.velocity_ = defaultAgent_.velocity_;
-            agents_.Add(agent);
-
+            //agents_
+            m_WorldAgentList.Add(agent);
+            if (isAddToAgents)
+            {
+                agents_.Add(agent);
+            }
             return agent.id_;
         }
 
+        public void AddAgent(Agent agent)
+        {
+            agents_.Add(agent);
+        }
+        
+        public Agent GetWorldAgent(int id)
+        {
+            int idx = -1;
+            Agent agent = null;
+            for (int i = 0; i < m_WorldAgentList.Count; i++)
+            {
+                if (m_WorldAgentList[i].id_ == id)
+                {
+                    idx = i;
+                    break;
+                }
+            }
+
+            if (idx >= 0)
+            {
+                agent = m_WorldAgentList[idx];
+            }
+
+            return agent;
+        }
+        
+        public void AddGroup(Group group)
+        {
+            agents_.Add(group);
+        }
+
+        public void RemoveGroup(Group group)
+        {
+            Agent[] agents = group.Clear();
+            agents_.AddRange(agents);
+        }
+        
+        public void AddAgentToGroup(int id,Group group)
+        {
+            int idx = -1;
+            Agent agent = null;
+            for (int i = 0; i < agents_.Count; i++)
+            {
+                if (agents_[i].id_ == id)
+                {
+                    idx = i;
+                    break;
+                }
+            }
+
+            if (idx >= 0)
+            {
+                agent = agents_[idx];
+                agents_.RemoveAt(idx);
+                group.AddChild(agent);
+            }
+        }
+
+        public void ReturnAgentFromGroup(int id,Group group)
+        {
+            Agent agent = group.RemoveChild(id);
+            if (agent != null)
+            {
+                agents_.Add(agent);
+            }
+        }
+        
         /**
          * <summary>Adds a new agent to the simulation.</summary>
          *
@@ -270,6 +346,7 @@ namespace RVO
             globalTime_ = 0.0f;
             timeStep_ = 0.1f;
 
+            m_WorldAgentList = new List<Agent>();
             SetNumWorkers(0);
         }
 
@@ -454,6 +531,11 @@ namespace RVO
             return agents_[agentNo].position_;
         }
 
+        public Vector2 GetWorldAgentPosition(int id)
+        {
+            return m_WorldAgentList[id].position_;
+        }
+        
         /**
          * <summary>Returns the two-dimensional preferred velocity of a
          * specified agent.</summary>
@@ -546,6 +628,11 @@ namespace RVO
             return agents_.Count;
         }
 
+        public int GetWorldNumAgents()
+        {
+            return m_WorldAgentList.Count;
+        }
+        
         /**
          * <summary>Returns the count of obstacle vertices in the simulation.
          * </summary>
@@ -685,7 +772,7 @@ namespace RVO
          * <param name="velocity">The default initial two-dimensional linear
          * velocity of a new agent.</param>
          */
-        public void setAgentDefaults(float neighborDist, int maxNeighbors, float timeHorizon, float timeHorizonObst, float radius, float maxSpeed, Vector2 velocity)
+        public void SetAgentDefaults(float neighborDist, int maxNeighbors, float timeHorizon, float timeHorizonObst, float radius, float maxSpeed, Vector2 velocity)
         {
             if (defaultAgent_ == null)
             {
@@ -765,9 +852,13 @@ namespace RVO
          * <param name="prefVelocity">The replacement of the two-dimensional
          * preferred velocity.</param>
          */
-        public void setAgentPrefVelocity(int agentNo, Vector2 prefVelocity)
+        public virtual void setAgentPrefVelocity(int agentNo, Vector2 prefVelocity)
         {
             agents_[agentNo].prefVelocity_ = prefVelocity;
+            if (agents_[agentNo] is Group group)
+            {
+                group.prefVelocity_ = prefVelocity;
+            }
         }
 
         /**
@@ -783,8 +874,8 @@ namespace RVO
             agents_[agentNo].radius_ = radius;
         }
 
-        public void setAgentMass(int agentNo, float mass_) {
-            agents_[agentNo].mass_ = mass_;
+        public void SetWorldAgentMass(int agentNo, float mass_) {
+            m_WorldAgentList[agentNo].mass_ = mass_;
         }
 
         /**

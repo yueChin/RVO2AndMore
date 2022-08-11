@@ -3,23 +3,29 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Sphere : MonoBehaviour {
+public class Sphere : MonoBehaviour
+{
     public bool Debug = false;
+
     // Gizmos
     public List<Line> msGizmosLines = new List<Line>();
     public int msId;
     public RVO.Vector2 msVelocity;
 
-    void OnDrawGizmos() {
-        if (!Debug) {
+    void OnDrawGizmos()
+    {
+        if (!Debug)
+        {
             return;
         }
+
         Gizmos.color = Color.red;
 
         // ORCA
         Vector3 from;
         Vector3 to;
-        foreach (Line msGizmosLine in msGizmosLines) {
+        foreach (Line msGizmosLine in msGizmosLines)
+        {
             RVO.Vector2 from_ = msGizmosLine.point - msGizmosLine.direction * 100;
             RVO.Vector2 to_ = msGizmosLine.point + msGizmosLine.direction * 100;
 
@@ -28,6 +34,7 @@ public class Sphere : MonoBehaviour {
 
             Gizmos.DrawLine(from, to);
         }
+
         msGizmosLines.Clear();
         // velocity
         Gizmos.color = Color.green;

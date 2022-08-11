@@ -41,7 +41,8 @@ namespace RVO
     public struct Vector2
     {
         public static readonly Vector2 zero = new Vector2(0.0f, 0.0f);
-        
+        public static readonly Vector2 max = new Vector2(float.MaxValue, float.MaxValue);
+        public static readonly Vector2 min = new Vector2(float.MinValue, float.MinValue);
         internal float x_;
         internal float y_;
 
