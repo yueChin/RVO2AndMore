@@ -44,6 +44,7 @@ public class FindPath : MonoBehaviour
                     currentNode = node;
                 }
             }
+
             // 把当前节点从开启列表中移除，并加入到关闭列表中
             openList.Remove(currentNode);
             closeSet.Add(currentNode);
@@ -53,14 +54,16 @@ public class FindPath : MonoBehaviour
                 GeneratePath(startNode, endNode);
                 return;
             }
+
             // 搜索当前节点的所有相邻节点
-            foreach (var node in m_Grid.GetNeighor(currentNode))
+            foreach (Node node in m_Grid.GetNeighor(currentNode))
             {
                 // 如果节点不可通过或者已在关闭列表中，跳出
                 if (!node.m_CanWalk || closeSet.Contains(node))
                 {
                     continue;
                 }
+
                 int gCost = currentNode.m_gCost + GetDistanceNodes(currentNode, node);
                 // 如果新路径到相邻点的距离更短 或者不在开启列表中
                 if (gCost < node.m_gCost || !openList.Contains(node))
@@ -94,6 +97,7 @@ public class FindPath : MonoBehaviour
             path.Push(node);
             node = node.m_Parent;
         }
+
         m_Grid.m_Path = path;
     }
 

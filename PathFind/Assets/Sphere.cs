@@ -26,8 +26,8 @@ public class Sphere : MonoBehaviour
         Vector3 to;
         foreach (Line msGizmosLine in msGizmosLines)
         {
-            RVO.Vector2 from_ = msGizmosLine.point - msGizmosLine.direction * 100;
-            RVO.Vector2 to_ = msGizmosLine.point + msGizmosLine.direction * 100;
+            RVO.Vector2 from_ = msGizmosLine.Point - msGizmosLine.Direction * 100;
+            RVO.Vector2 to_ = msGizmosLine.Point + msGizmosLine.Direction * 100;
 
             from = transform.position + new Vector3(from_.x(), 0, from_.y());
             to = transform.position + new Vector3(to_.x(), 0, to_.y());

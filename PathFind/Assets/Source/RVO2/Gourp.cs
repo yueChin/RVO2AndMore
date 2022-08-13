@@ -42,7 +42,7 @@ namespace RVO {
     {
         internal List<Agent> m_ChildList = new List<Agent>();
         internal Vector2 m_Center;
-        internal Vector2 m_PadMin = Vector2.zero, m_PadMax = Vector2.min;
+        internal Vector2 m_PadMin = Vector2.Zero, m_PadMax = Vector2.MIN;
         internal void AddChild(Agent agent)
         {
             if (agent == null)
@@ -52,11 +52,11 @@ namespace RVO {
             float minX = 0, minY = 0;
             CaculCircular(agent:agent);
 
-            position_ = (m_PadMin + m_PadMax) / 2;
-            m_Center = position_;//目前中心点就是包围圆的坐标点
-            mass_ += agent.mass_;
+            Position = (m_PadMin + m_PadMax) / 2;
+            m_Center = Position;//目前中心点就是包围圆的坐标点
+            Mass += agent.Mass;
             Vector2 diamV2 = (m_PadMax - m_PadMin);
-            radius_ = Mathf.Sqrt(diamV2.x_ * diamV2.x_ + diamV2.y_ * diamV2.y_) / 2 ;
+            Radius = Mathf.Sqrt(diamV2.X * diamV2.X + diamV2.Y * diamV2.Y) / 2 ;
         }
 
         internal Agent RemoveChild(int id)
@@ -65,7 +65,7 @@ namespace RVO {
             Agent agent = null;
             for (int i = 0; i < m_ChildList.Count; i++)
             {
-                if (m_ChildList[i].id_ == id)
+                if (m_ChildList[i].ID == id)
                 {
                     idx = i;
                     break;
@@ -75,9 +75,9 @@ namespace RVO {
             if (idx >= 0)
             {
                 agent = m_ChildList[idx];
-                mass_ -= agent.mass_;
-                if ((agent.position_.x_ == m_PadMin.x_) || (agent.position_.x_ == m_PadMax.x_)
-                    ||(agent.position_.y_ == m_PadMin.y_) || (agent.position_.y_ == m_PadMax.y_))
+                Mass -= agent.Mass;
+                if ((agent.Position.X == m_PadMin.X) || (agent.Position.X == m_PadMax.X)
+                    ||(agent.Position.Y == m_PadMin.Y) || (agent.Position.Y == m_PadMax.Y))
                 {
                     ReCaculCircular();
                 }
@@ -88,8 +88,8 @@ namespace RVO {
 
         internal void ReCaculCircular()
         {
-            m_PadMin = Vector2.max;
-            m_PadMax = Vector2.min;
+            m_PadMin = Vector2.MAX;
+            m_PadMax = Vector2.MIN;
             if (m_ChildList.Count > 0)
             {
                 for (int i = 0; i < m_ChildList.Count; i++)
@@ -98,25 +98,25 @@ namespace RVO {
                     CaculCircular(agent:agent);
                 }
             }
-            position_ = (m_PadMin + m_PadMax) / 2;
-            m_Center = position_;//目前中心点就是包围圆的坐标点
+            Position = (m_PadMin + m_PadMax) / 2;
+            m_Center = Position;//目前中心点就是包围圆的坐标点
             Vector2 diamV2 = (m_PadMax - m_PadMin);
-            radius_ = Mathf.Sqrt(diamV2.x_ * diamV2.x_ + diamV2.y_ * diamV2.y_) / 2 ;
+            Radius = Mathf.Sqrt(diamV2.X * diamV2.X + diamV2.Y * diamV2.Y) / 2 ;
         }
 
         internal void CaculCircular(Agent agent)
         {
             float minX = 0, minY = 0;
-            minX = m_PadMin.x_ > agent.position_.x_ ? agent.position_.x_ : m_PadMin.x_;
-            minY = m_PadMin.y_ > agent.position_.y_ ? agent.position_.y_ : m_PadMin.y_;
+            minX = m_PadMin.X > agent.Position.X ? agent.Position.X : m_PadMin.X;
+            minY = m_PadMin.Y > agent.Position.Y ? agent.Position.Y : m_PadMin.Y;
             if (minX != 0 || minY != 0)
             {
                 m_PadMin = new Vector2(minX, minY);
             }
             
             float maxX = 0, maxY = 0;
-            maxX = m_PadMax.x_ < agent.position_.x_ ? agent.position_.x_ : m_PadMax.x_;
-            maxY = m_PadMax.y_ < agent.position_.y_ ? agent.position_.y_ : m_PadMax.y_;
+            maxX = m_PadMax.X < agent.Position.X ? agent.Position.X : m_PadMax.X;
+            maxY = m_PadMax.Y < agent.Position.Y ? agent.Position.Y : m_PadMax.Y;
             if (minX != 0 || minY != 0)
             {
                 m_PadMax = new Vector2(maxX, maxY);
@@ -127,24 +127,24 @@ namespace RVO {
         {
             Agent[] agents = m_ChildList.ToArray();
             m_ChildList.Clear();
-            mass_ = 0;
-            radius_ = 0;
+            Mass = 0;
+            Radius = 0;
             return agents;
         }
         
-        internal override void update()
+        internal override void Update()
         {
-            velocity_ = newVelocity_;
-            position_ += velocity_ * Simulator.Instance.timeStep_;
+            Velocity = NewVelocity;
+            Position += Velocity * Simulator.Instance.TimeStep;
 
             
             for (int i = 0; i < m_ChildList.Count; i++)
             {
-                m_ChildList[i].update();
+                m_ChildList[i].Update();
             }
             
             ////////////////////////////////////////////////////////////////////////////////////////////////
-            Test01.mSphereScritps[id_].msVelocity = velocity_;
+            Test01.m_SphereScritps[ID].msVelocity = Velocity;
             ////////////////////////////////////////////////////////////////////////////////////////////////
         }
     }

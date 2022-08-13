@@ -40,11 +40,11 @@ namespace RVO
      */
     public struct Vector2
     {
-        public static readonly Vector2 zero = new Vector2(0.0f, 0.0f);
-        public static readonly Vector2 max = new Vector2(float.MaxValue, float.MaxValue);
-        public static readonly Vector2 min = new Vector2(float.MinValue, float.MinValue);
-        internal float x_;
-        internal float y_;
+        public static readonly Vector2 Zero = new Vector2(0.0f, 0.0f);
+        public static readonly Vector2 MAX = new Vector2(float.MaxValue, float.MaxValue);
+        public static readonly Vector2 MIN = new Vector2(float.MinValue, float.MinValue);
+        internal float X;
+        internal float Y;
 
         /**
          * <summary>Constructs and initializes a two-dimensional vector from the
@@ -57,8 +57,8 @@ namespace RVO
          */
         public Vector2(float x, float y)
         {
-            x_ = x;
-            y_ = y;
+            X = x;
+            Y = y;
         }
 
         /**
@@ -68,7 +68,7 @@ namespace RVO
          */
         public override string ToString()
         {
-            return "(" + x_.ToString(new CultureInfo("").NumberFormat) + "," + y_.ToString(new CultureInfo("").NumberFormat) + ")";
+            return "(" + X.ToString(new CultureInfo("").NumberFormat) + "," + Y.ToString(new CultureInfo("").NumberFormat) + ")";
         }
 
         /**
@@ -79,7 +79,7 @@ namespace RVO
          */
         public float x()
         {
-            return x_;
+            return X;
         }
 
         /**
@@ -90,7 +90,7 @@ namespace RVO
          */
         public float y()
         {
-            return y_;
+            return Y;
         }
 
         /**
@@ -105,7 +105,7 @@ namespace RVO
          */
         public static float operator *(Vector2 vector1, Vector2 vector2)
         {
-            return vector1.x_ * vector2.x_ + vector1.y_ * vector2.y_;
+            return vector1.X * vector2.X + vector1.Y * vector2.Y;
         }
 
         /**
@@ -135,7 +135,7 @@ namespace RVO
          */
         public static Vector2 operator *(Vector2 vector, float scalar)
         {
-            return new Vector2(vector.x_ * scalar, vector.y_ * scalar);
+            return new Vector2(vector.X * scalar, vector.Y * scalar);
         }
 
         /**
@@ -150,7 +150,7 @@ namespace RVO
          */
         public static Vector2 operator /(Vector2 vector, float scalar)
         {
-            return new Vector2(vector.x_ / scalar, vector.y_ / scalar);
+            return new Vector2(vector.X / scalar, vector.Y / scalar);
         }
 
         /**
@@ -165,7 +165,7 @@ namespace RVO
          */
         public static Vector2 operator +(Vector2 vector1, Vector2 vector2)
         {
-            return new Vector2(vector1.x_ + vector2.x_, vector1.y_ + vector2.y_);
+            return new Vector2(vector1.X + vector2.X, vector1.Y + vector2.Y);
         }
 
         /**
@@ -180,7 +180,7 @@ namespace RVO
          */
         public static Vector2 operator -(Vector2 vector1, Vector2 vector2)
         {
-            return new Vector2(vector1.x_ - vector2.x_, vector1.y_ - vector2.y_);
+            return new Vector2(vector1.X - vector2.X, vector1.Y - vector2.Y);
         }
 
         /**
@@ -194,7 +194,7 @@ namespace RVO
          */
         public static Vector2 operator -(Vector2 vector)
         {
-            return new Vector2(-vector.x_, -vector.y_);
+            return new Vector2(-vector.X, -vector.Y);
         }
     }
 }

@@ -1,8 +1,7 @@
  
 
-public class AstarPosVo {
-
-	 public int x;
-	 public int y;
-
+public class AStarPosVo
+{
+	public int X;
+	public int Y;
 }

@@ -40,16 +40,16 @@ namespace RVO
     /**
      * <summary>Defines the simulation.</summary>
      */
-    public class Simulator
+    public sealed class Simulator
     {
         /**
          * <summary>Defines a worker.</summary>
          */
         private class Worker
         {
-            private ManualResetEvent doneEvent_;
-            private int end_;
-            private int start_;
+            private readonly ManualResetEvent m_DoneEvent;
+            private readonly int m_End;
+            private readonly int m_Start;
 
             /**
              * <summary>Constructs and initializes a worker.</summary>
@@ -60,9 +60,9 @@ namespace RVO
              */
             internal Worker(int start, int end, ManualResetEvent doneEvent)
             {
-                start_ = start;
-                end_ = end;
-                doneEvent_ = doneEvent;
+                m_Start = start;
+                m_End = end;
+                m_DoneEvent = doneEvent;
             }
 
             /**
@@ -70,15 +70,15 @@ namespace RVO
              *
              * <param name="obj">Unused.</param>
              */
-            internal void step(object obj)
+            internal void Step(object obj)
             {
-                for (int agentNo = start_; agentNo < end_; ++agentNo)
+                for (int agentNo = m_Start; agentNo < m_End; ++agentNo)
                 {
-                    Simulator.Instance.agents_[agentNo].computeNeighbors();
-                    Simulator.Instance.agents_[agentNo].computeNewVelocity();
+                    Simulator.Instance.Agents[agentNo].ComputeNeighbors();
+                    Simulator.Instance.Agents[agentNo].computeNewVelocity();
                 }
 
-                doneEvent_.Set();
+                m_DoneEvent.Set();
             }
 
             /**
@@ -87,39 +87,33 @@ namespace RVO
              *
              * <param name="obj">Unused.</param>
              */
-            internal void update(object obj)
+            internal void Update(object obj)
             {
-                for (int agentNo = start_; agentNo < end_; ++agentNo)
+                for (int agentNo = m_Start; agentNo < m_End; ++agentNo)
                 {
-                    Simulator.Instance.agents_[agentNo].update();
+                    Simulator.Instance.Agents[agentNo].Update();
                 }
 
-                doneEvent_.Set();
+                m_DoneEvent.Set();
             }
         }
 
-        internal IList<Agent> agents_;
-        internal IList<Obstacle> obstacles_;
-        internal KdTree kdTree_;
-        internal float timeStep_;
+        internal IList<Agent> Agents;
+        internal IList<Obstacle> Obstacles;
+        internal KdTree KdTree;
+        internal float TimeStep;
 
-        private static Simulator instance_ = new Simulator();
+        private static Simulator s_Instance = new Simulator();
 
-        private Agent defaultAgent_;
-        private ManualResetEvent[] doneEvents_;
-        private Worker[] workers_;
-        private int numWorkers_;
-        private float globalTime_;
+        private Agent m_DefaultAgent;
+        private ManualResetEvent[] m_DoneEvents;
+        private Worker[] m_Workers;
+        private int m_NumWorkers;
+        private float m_GlobalTime;
 
         private HashSet<int> m_IDSet;
         private IList<Agent> m_WorldAgentList;
-        public static Simulator Instance
-        {
-            get
-            {
-                return instance_;
-            }
-        }
+        public static Simulator Instance => s_Instance;
 
         /**
          * <summary>Adds a new agent with default properties to the simulation.
@@ -133,7 +127,7 @@ namespace RVO
          */
         public int GetDefaultAgent(Vector2 position,bool isAddToAgents = true)
         {
-            if (defaultAgent_ == null)
+            if (m_DefaultAgent == null)
             {
                 return -1;
             }
@@ -141,27 +135,27 @@ namespace RVO
             Agent agent = new Agent();
             //目前的id是初始化的时候按加入的列表数量，需要替换掉
             //agents_
-            agent.id_ = m_WorldAgentList.Count;
-            agent.maxNeighbors_ = defaultAgent_.maxNeighbors_;
-            agent.maxSpeed_ = defaultAgent_.maxSpeed_;
-            agent.neighborDist_ = defaultAgent_.neighborDist_;
-            agent.position_ = position;
-            agent.radius_ = defaultAgent_.radius_;
-            agent.timeHorizon_ = defaultAgent_.timeHorizon_;
-            agent.timeHorizonObst_ = defaultAgent_.timeHorizonObst_;
-            agent.velocity_ = defaultAgent_.velocity_;
+            agent.ID = m_WorldAgentList.Count;
+            agent.MAXNeighbors = m_DefaultAgent.MAXNeighbors;
+            agent.MAXSpeed = m_DefaultAgent.MAXSpeed;
+            agent.NeighborDist = m_DefaultAgent.NeighborDist;
+            agent.Position = position;
+            agent.Radius = m_DefaultAgent.Radius;
+            agent.TimeHorizon = m_DefaultAgent.TimeHorizon;
+            agent.TimeHorizonObst = m_DefaultAgent.TimeHorizonObst;
+            agent.Velocity = m_DefaultAgent.Velocity;
             //agents_
             m_WorldAgentList.Add(agent);
             if (isAddToAgents)
             {
-                agents_.Add(agent);
+                Agents.Add(agent);
             }
-            return agent.id_;
+            return agent.ID;
         }
 
         public void AddAgent(Agent agent)
         {
-            agents_.Add(agent);
+            Agents.Add(agent);
         }
         
         public Agent GetWorldAgent(int id)
@@ -170,7 +164,7 @@ namespace RVO
             Agent agent = null;
             for (int i = 0; i < m_WorldAgentList.Count; i++)
             {
-                if (m_WorldAgentList[i].id_ == id)
+                if (m_WorldAgentList[i].ID == id)
                 {
                     idx = i;
                     break;
@@ -187,22 +181,22 @@ namespace RVO
         
         public void AddGroup(Group group)
         {
-            agents_.Add(group);
+            Agents.Add(group);
         }
 
         public void RemoveGroup(Group group)
         {
             Agent[] agents = group.Clear();
-            agents_.AddRange(agents);
+            Agents.AddRange(agents);
         }
         
         public void AddAgentToGroup(int id,Group group)
         {
             int idx = -1;
             Agent agent = null;
-            for (int i = 0; i < agents_.Count; i++)
+            for (int i = 0; i < Agents.Count; i++)
             {
-                if (agents_[i].id_ == id)
+                if (Agents[i].ID == id)
                 {
                     idx = i;
                     break;
@@ -211,8 +205,8 @@ namespace RVO
 
             if (idx >= 0)
             {
-                agent = agents_[idx];
-                agents_.RemoveAt(idx);
+                agent = Agents[idx];
+                Agents.RemoveAt(idx);
                 group.AddChild(agent);
             }
         }
@@ -222,7 +216,7 @@ namespace RVO
             Agent agent = group.RemoveChild(id);
             if (agent != null)
             {
-                agents_.Add(agent);
+                Agents.Add(agent);
             }
         }
         
@@ -263,18 +257,18 @@ namespace RVO
         public int addAgent(Vector2 position, float neighborDist, int maxNeighbors, float timeHorizon, float timeHorizonObst, float radius, float maxSpeed, Vector2 velocity)
         {
             Agent agent = new Agent();
-            agent.id_ = agents_.Count;
-            agent.maxNeighbors_ = maxNeighbors;
-            agent.maxSpeed_ = maxSpeed;
-            agent.neighborDist_ = neighborDist;
-            agent.position_ = position;
-            agent.radius_ = radius;
-            agent.timeHorizon_ = timeHorizon;
-            agent.timeHorizonObst_ = timeHorizonObst;
-            agent.velocity_ = velocity;
-            agents_.Add(agent);
+            agent.ID = Agents.Count;
+            agent.MAXNeighbors = maxNeighbors;
+            agent.MAXSpeed = maxSpeed;
+            agent.NeighborDist = neighborDist;
+            agent.Position = position;
+            agent.Radius = radius;
+            agent.TimeHorizon = timeHorizon;
+            agent.TimeHorizonObst = timeHorizonObst;
+            agent.Velocity = velocity;
+            Agents.Add(agent);
 
-            return agent.id_;
+            return agent.ID;
         }
 
         /**
@@ -290,45 +284,45 @@ namespace RVO
          * the environment, the vertices should be listed in clockwise order.
          * </remarks>
          */
-        public int addObstacle(IList<Vector2> vertices)
+        public int AddObstacle(IList<Vector2> vertices)
         {
             if (vertices.Count < 2)
             {
                 return -1;
             }
 
-            int obstacleNo = obstacles_.Count;
+            int obstacleNo = Obstacles.Count;
 
             for (int i = 0; i < vertices.Count; ++i)
             {
                 Obstacle obstacle = new Obstacle();
-                obstacle.point_ = vertices[i];
+                obstacle.Point = vertices[i];
 
                 if (i != 0)
                 {
-                    obstacle.previous_ = obstacles_[obstacles_.Count - 1];
-                    obstacle.previous_.next_ = obstacle;
+                    obstacle.Previous = Obstacles[Obstacles.Count - 1];
+                    obstacle.Previous.Next = obstacle;
                 }
 
                 if (i == vertices.Count - 1)
                 {
-                    obstacle.next_ = obstacles_[obstacleNo];
-                    obstacle.next_.previous_ = obstacle;
+                    obstacle.Next = Obstacles[obstacleNo];
+                    obstacle.Next.Previous = obstacle;
                 }
 
-                obstacle.direction_ = RVOMath.normalize(vertices[(i == vertices.Count - 1 ? 0 : i + 1)] - vertices[i]);
+                obstacle.Direction = RVOMath.Normalize(vertices[(i == vertices.Count - 1 ? 0 : i + 1)] - vertices[i]);
 
                 if (vertices.Count == 2)
                 {
-                    obstacle.convex_ = true;
+                    obstacle.Convex = true;
                 }
                 else
                 {
-                    obstacle.convex_ = (RVOMath.leftOf(vertices[(i == 0 ? vertices.Count - 1 : i - 1)], vertices[i], vertices[(i == vertices.Count - 1 ? 0 : i + 1)]) >= 0.0f);
+                    obstacle.Convex = (RVOMath.LeftOf(vertices[(i == 0 ? vertices.Count - 1 : i - 1)], vertices[i], vertices[(i == vertices.Count - 1 ? 0 : i + 1)]) >= 0.0f);
                 }
 
-                obstacle.id_ = obstacles_.Count;
-                obstacles_.Add(obstacle);
+                obstacle.ID = Obstacles.Count;
+                Obstacles.Add(obstacle);
             }
 
             return obstacleNo;
@@ -339,12 +333,12 @@ namespace RVO
          */
         public void Clear()
         {
-            agents_ = new List<Agent>();
-            defaultAgent_ = null;
-            kdTree_ = new KdTree();
-            obstacles_ = new List<Obstacle>();
-            globalTime_ = 0.0f;
-            timeStep_ = 0.1f;
+            Agents = new List<Agent>();
+            m_DefaultAgent = null;
+            KdTree = new KdTree();
+            Obstacles = new List<Obstacle>();
+            m_GlobalTime = 0.0f;
+            TimeStep = 0.1f;
 
             m_WorldAgentList = new List<Agent>();
             SetNumWorkers(0);
@@ -358,39 +352,39 @@ namespace RVO
          */
         public float doStep()
         {
-            if (workers_ == null)
+            if (m_Workers == null)
             {
-                workers_ = new Worker[numWorkers_];
-                doneEvents_ = new ManualResetEvent[workers_.Length];
+                m_Workers = new Worker[m_NumWorkers];
+                m_DoneEvents = new ManualResetEvent[m_Workers.Length];
 
-                for (int block = 0; block < workers_.Length; ++block)
+                for (int block = 0; block < m_Workers.Length; ++block)
                 {
-                    doneEvents_[block] = new ManualResetEvent(false);
-                    workers_[block] = new Worker(block * getNumAgents() / workers_.Length, (block + 1) * getNumAgents() / workers_.Length, doneEvents_[block]);
+                    m_DoneEvents[block] = new ManualResetEvent(false);
+                    m_Workers[block] = new Worker(block * GetNumAgents() / m_Workers.Length, (block + 1) * GetNumAgents() / m_Workers.Length, m_DoneEvents[block]);
                 }
             }
 
-            kdTree_.buildAgentTree();
+            KdTree.buildAgentTree();
 
-            for (int block = 0; block < workers_.Length; ++block)
+            for (int block = 0; block < m_Workers.Length; ++block)
             {
-                doneEvents_[block].Reset();
-                ThreadPool.QueueUserWorkItem(workers_[block].step);
+                m_DoneEvents[block].Reset();
+                ThreadPool.QueueUserWorkItem(m_Workers[block].Step);
             }
 
-            WaitHandle.WaitAll(doneEvents_);
+            WaitHandle.WaitAll(m_DoneEvents);
 
-            for (int block = 0; block < workers_.Length; ++block)
+            for (int block = 0; block < m_Workers.Length; ++block)
             {
-                doneEvents_[block].Reset();
-                ThreadPool.QueueUserWorkItem(workers_[block].update);
+                m_DoneEvents[block].Reset();
+                ThreadPool.QueueUserWorkItem(m_Workers[block].Update);
             }
 
-            WaitHandle.WaitAll(doneEvents_);
+            WaitHandle.WaitAll(m_DoneEvents);
 
-            globalTime_ += timeStep_;
+            m_GlobalTime += TimeStep;
 
-            return globalTime_;
+            return m_GlobalTime;
         }
 
         /**
@@ -406,7 +400,7 @@ namespace RVO
          */
         public int getAgentAgentNeighbor(int agentNo, int neighborNo)
         {
-            return agents_[agentNo].agentNeighbors_[neighborNo].Value.id_;
+            return Agents[agentNo].AgentNeighborList[neighborNo].Value.ID;
         }
 
         /**
@@ -420,7 +414,7 @@ namespace RVO
          */
         public int getAgentMaxNeighbors(int agentNo)
         {
-            return agents_[agentNo].maxNeighbors_;
+            return Agents[agentNo].MAXNeighbors;
         }
 
         /**
@@ -433,7 +427,7 @@ namespace RVO
          */
         public float getAgentMaxSpeed(int agentNo)
         {
-            return agents_[agentNo].maxSpeed_;
+            return Agents[agentNo].MAXSpeed;
         }
 
         /**
@@ -448,7 +442,7 @@ namespace RVO
          */
         public float getAgentNeighborDist(int agentNo)
         {
-            return agents_[agentNo].neighborDist_;
+            return Agents[agentNo].NeighborDist;
         }
 
         /**
@@ -463,7 +457,7 @@ namespace RVO
          */
         public int getAgentNumAgentNeighbors(int agentNo)
         {
-            return agents_[agentNo].agentNeighbors_.Count;
+            return Agents[agentNo].AgentNeighborList.Count;
         }
 
         /**
@@ -476,9 +470,9 @@ namespace RVO
          * <param name="agentNo">The number of the agent whose count of obstacle
          * neighbors is to be retrieved.</param>
          */
-        public int getAgentNumObstacleNeighbors(int agentNo)
+        public int GetAgentNumObstacleNeighbors(int agentNo)
         {
-            return agents_[agentNo].obstacleNeighbors_.Count;
+            return Agents[agentNo].ObstacleNeighborList.Count;
         }
 
         /**
@@ -493,9 +487,9 @@ namespace RVO
          * <param name="neighborNo">The number of the obstacle neighbor to be
          * retrieved.</param>
          */
-        public int getAgentObstacleNeighbor(int agentNo, int neighborNo)
+        public int GetAgentObstacleNeighbor(int agentNo, int neighborNo)
         {
-            return agents_[agentNo].obstacleNeighbors_[neighborNo].Value.id_;
+            return Agents[agentNo].ObstacleNeighborList[neighborNo].Value.ID;
         }
 
         /**
@@ -511,9 +505,9 @@ namespace RVO
          * permissible velocities with respect to that ORCA constraint.
          * </remarks>
          */
-        public IList<Line> getAgentOrcaLines(int agentNo)
+        public IList<Line> GetAgentOrcaLines(int agentNo)
         {
-            return agents_[agentNo].orcaLines_;
+            return Agents[agentNo].OrcaLines;
         }
 
         /**
@@ -526,14 +520,14 @@ namespace RVO
          * <param name="agentNo">The number of the agent whose two-dimensional
          * position is to be retrieved.</param>
          */
-        public Vector2 getAgentPosition(int agentNo)
+        public Vector2 GetAgentPosition(int agentNo)
         {
-            return agents_[agentNo].position_;
+            return Agents[agentNo].Position;
         }
 
         public Vector2 GetWorldAgentPosition(int id)
         {
-            return m_WorldAgentList[id].position_;
+            return m_WorldAgentList[id].Position;
         }
         
         /**
@@ -548,7 +542,7 @@ namespace RVO
          */
         public Vector2 getAgentPrefVelocity(int agentNo)
         {
-            return agents_[agentNo].prefVelocity_;
+            return Agents[agentNo].PrefVelocity;
         }
 
         /**
@@ -559,9 +553,9 @@ namespace RVO
          * <param name="agentNo">The number of the agent whose radius is to be
          * retrieved.</param>
          */
-        public float getAgentRadius(int agentNo)
+        public float GetAgentRadius(int agentNo)
         {
-            return agents_[agentNo].radius_;
+            return Agents[agentNo].Radius;
         }
 
         /**
@@ -572,9 +566,9 @@ namespace RVO
          * <param name="agentNo">The number of the agent whose time horizon is
          * to be retrieved.</param>
          */
-        public float getAgentTimeHorizon(int agentNo)
+        public float GetAgentTimeHorizon(int agentNo)
         {
-            return agents_[agentNo].timeHorizon_;
+            return Agents[agentNo].TimeHorizon;
         }
 
         /**
@@ -587,9 +581,9 @@ namespace RVO
          * <param name="agentNo">The number of the agent whose time horizon with
          * respect to obstacles is to be retrieved.</param>
          */
-        public float getAgentTimeHorizonObst(int agentNo)
+        public float GetAgentTimeHorizonObst(int agentNo)
         {
-            return agents_[agentNo].timeHorizonObst_;
+            return Agents[agentNo].TimeHorizonObst;
         }
 
         /**
@@ -602,9 +596,9 @@ namespace RVO
          * <param name="agentNo">The number of the agent whose two-dimensional
          * linear velocity is to be retrieved.</param>
          */
-        public Vector2 getAgentVelocity(int agentNo)
+        public Vector2 GetAgentVelocity(int agentNo)
         {
-            return agents_[agentNo].velocity_;
+            return Agents[agentNo].Velocity;
         }
 
         /**
@@ -613,9 +607,9 @@ namespace RVO
          * <returns>The present global time of the simulation (zero initially).
          * </returns>
          */
-        public float getGlobalTime()
+        public float GetGlobalTime()
         {
-            return globalTime_;
+            return m_GlobalTime;
         }
 
         /**
@@ -623,9 +617,9 @@ namespace RVO
          *
          * <returns>The count of agents in the simulation.</returns>
          */
-        public int getNumAgents()
+        public int GetNumAgents()
         {
-            return agents_.Count;
+            return Agents.Count;
         }
 
         public int GetWorldNumAgents()
@@ -639,9 +633,9 @@ namespace RVO
          *
          * <returns>The count of obstacle vertices in the simulation.</returns>
          */
-        public int getNumObstacleVertices()
+        public int GetNumObstacleVertices()
         {
-            return obstacles_.Count;
+            return Obstacles.Count;
         }
 
         /**
@@ -651,7 +645,7 @@ namespace RVO
          */
         public int GetNumWorkers()
         {
-            return numWorkers_;
+            return m_NumWorkers;
         }
 
         /**
@@ -664,9 +658,9 @@ namespace RVO
          * <param name="vertexNo">The number of the obstacle vertex to be
          * retrieved.</param>
          */
-        public Vector2 getObstacleVertex(int vertexNo)
+        public Vector2 GetObstacleVertex(int vertexNo)
         {
-            return obstacles_[vertexNo].point_;
+            return Obstacles[vertexNo].Point;
         }
 
         /**
@@ -679,9 +673,9 @@ namespace RVO
          * <param name="vertexNo">The number of the obstacle vertex whose
          * successor is to be retrieved.</param>
          */
-        public int getNextObstacleVertexNo(int vertexNo)
+        public int GetNextObstacleVertexNo(int vertexNo)
         {
-            return obstacles_[vertexNo].next_.id_;
+            return Obstacles[vertexNo].Next.ID;
         }
 
         /**
@@ -694,9 +688,9 @@ namespace RVO
          * <param name="vertexNo">The number of the obstacle vertex whose
          * predecessor is to be retrieved.</param>
          */
-        public int getPrevObstacleVertexNo(int vertexNo)
+        public int GetPrevObstacleVertexNo(int vertexNo)
         {
-            return obstacles_[vertexNo].previous_.id_;
+            return Obstacles[vertexNo].Previous.ID;
         }
 
         /**
@@ -704,9 +698,9 @@ namespace RVO
          *
          * <returns>The present time step of the simulation.</returns>
          */
-        public float getTimeStep()
+        public float GetTimeStep()
         {
-            return timeStep_;
+            return TimeStep;
         }
 
         /**
@@ -716,9 +710,9 @@ namespace RVO
          * <remarks>Obstacles added to the simulation after this function has
          * been called are not accounted for in the simulation.</remarks>
          */
-        public void processObstacles()
+        public void ProcessObstacles()
         {
-            kdTree_.buildObstacleTree();
+            KdTree.BuildObstacleTree();
         }
 
         /**
@@ -735,9 +729,9 @@ namespace RVO
          * the two points and the obstacles in order for the points to be
          * mutually visible (optional). Must be non-negative.</param>
          */
-        public bool queryVisibility(Vector2 point1, Vector2 point2, float radius)
+        public bool QueryVisibility(Vector2 point1, Vector2 point2, float radius)
         {
-            return kdTree_.queryVisibility(point1, point2, radius);
+            return KdTree.QueryVisibility(point1, point2, radius);
         }
 
         /**
@@ -774,18 +768,18 @@ namespace RVO
          */
         public void SetAgentDefaults(float neighborDist, int maxNeighbors, float timeHorizon, float timeHorizonObst, float radius, float maxSpeed, Vector2 velocity)
         {
-            if (defaultAgent_ == null)
+            if (m_DefaultAgent == null)
             {
-                defaultAgent_ = new Agent();
+                m_DefaultAgent = new Agent();
             }
 
-            defaultAgent_.maxNeighbors_ = maxNeighbors;
-            defaultAgent_.maxSpeed_ = maxSpeed;
-            defaultAgent_.neighborDist_ = neighborDist;
-            defaultAgent_.radius_ = radius;
-            defaultAgent_.timeHorizon_ = timeHorizon;
-            defaultAgent_.timeHorizonObst_ = timeHorizonObst;
-            defaultAgent_.velocity_ = velocity;
+            m_DefaultAgent.MAXNeighbors = maxNeighbors;
+            m_DefaultAgent.MAXSpeed = maxSpeed;
+            m_DefaultAgent.NeighborDist = neighborDist;
+            m_DefaultAgent.Radius = radius;
+            m_DefaultAgent.TimeHorizon = timeHorizon;
+            m_DefaultAgent.TimeHorizonObst = timeHorizonObst;
+            m_DefaultAgent.Velocity = velocity;
         }
 
         /**
@@ -797,9 +791,9 @@ namespace RVO
          * <param name="maxNeighbors">The replacement maximum neighbor count.
          * </param>
          */
-        public void setAgentMaxNeighbors(int agentNo, int maxNeighbors)
+        public void SetAgentMaxNeighbors(int agentNo, int maxNeighbors)
         {
-            agents_[agentNo].maxNeighbors_ = maxNeighbors;
+            Agents[agentNo].MAXNeighbors = maxNeighbors;
         }
 
         /**
@@ -810,9 +804,9 @@ namespace RVO
          * <param name="maxSpeed">The replacement maximum speed. Must be
          * non-negative.</param>
          */
-        public void setAgentMaxSpeed(int agentNo, float maxSpeed)
+        public void SetAgentMaxSpeed(int agentNo, float maxSpeed)
         {
-            agents_[agentNo].maxSpeed_ = maxSpeed;
+            Agents[agentNo].MAXSpeed = maxSpeed;
         }
 
         /**
@@ -824,9 +818,9 @@ namespace RVO
          * <param name="neighborDist">The replacement maximum neighbor distance.
          * Must be non-negative.</param>
          */
-        public void setAgentNeighborDist(int agentNo, float neighborDist)
+        public void SetAgentNeighborDist(int agentNo, float neighborDist)
         {
-            agents_[agentNo].neighborDist_ = neighborDist;
+            Agents[agentNo].NeighborDist = neighborDist;
         }
 
         /**
@@ -838,9 +832,9 @@ namespace RVO
          * <param name="position">The replacement of the two-dimensional
          * position.</param>
          */
-        public void setAgentPosition(int agentNo, Vector2 position)
+        public void SetAgentPosition(int agentNo, Vector2 position)
         {
-            agents_[agentNo].position_ = position;
+            Agents[agentNo].Position = position;
         }
 
         /**
@@ -852,12 +846,12 @@ namespace RVO
          * <param name="prefVelocity">The replacement of the two-dimensional
          * preferred velocity.</param>
          */
-        public virtual void setAgentPrefVelocity(int agentNo, Vector2 prefVelocity)
+        public void SetAgentPrefVelocity(int agentNo, Vector2 prefVelocity)
         {
-            agents_[agentNo].prefVelocity_ = prefVelocity;
-            if (agents_[agentNo] is Group group)
+            Agents[agentNo].PrefVelocity = prefVelocity;
+            if (Agents[agentNo] is Group group)
             {
-                group.prefVelocity_ = prefVelocity;
+                group.PrefVelocity = prefVelocity;
             }
         }
 
@@ -869,13 +863,13 @@ namespace RVO
          * <param name="radius">The replacement radius. Must be non-negative.
          * </param>
          */
-        public void setAgentRadius(int agentNo, float radius)
+        public void SetAgentRadius(int agentNo, float radius)
         {
-            agents_[agentNo].radius_ = radius;
+            Agents[agentNo].Radius = radius;
         }
 
-        public void SetWorldAgentMass(int agentNo, float mass_) {
-            m_WorldAgentList[agentNo].mass_ = mass_;
+        public void SetWorldAgentMass(int agentNo, float mass) {
+            m_WorldAgentList[agentNo].Mass = mass;
         }
 
         /**
@@ -887,9 +881,9 @@ namespace RVO
          * <param name="timeHorizon">The replacement time horizon with respect
          * to other agents. Must be positive.</param>
          */
-        public void setAgentTimeHorizon(int agentNo, float timeHorizon)
+        public void SetAgentTimeHorizon(int agentNo, float timeHorizon)
         {
-            agents_[agentNo].timeHorizon_ = timeHorizon;
+            Agents[agentNo].TimeHorizon = timeHorizon;
         }
 
         /**
@@ -901,9 +895,9 @@ namespace RVO
          * <param name="timeHorizonObst">The replacement time horizon with
          * respect to obstacles. Must be positive.</param>
          */
-        public void setAgentTimeHorizonObst(int agentNo, float timeHorizonObst)
+        public void SetAgentTimeHorizonObst(int agentNo, float timeHorizonObst)
         {
-            agents_[agentNo].timeHorizonObst_ = timeHorizonObst;
+            Agents[agentNo].TimeHorizonObst = timeHorizonObst;
         }
 
         /**
@@ -915,9 +909,9 @@ namespace RVO
          * <param name="velocity">The replacement two-dimensional linear
          * velocity.</param>
          */
-        public void setAgentVelocity(int agentNo, Vector2 velocity)
+        public void SetAgentVelocity(int agentNo, Vector2 velocity)
         {
-            agents_[agentNo].velocity_ = velocity;
+            Agents[agentNo].Velocity = velocity;
         }
 
         /**
@@ -925,9 +919,9 @@ namespace RVO
          *
          * <param name="globalTime">The global time of the simulation.</param>
          */
-        public void setGlobalTime(float globalTime)
+        public void SetGlobalTime(float globalTime)
         {
-            globalTime_ = globalTime;
+            m_GlobalTime = globalTime;
         }
 
         /**
@@ -937,14 +931,14 @@ namespace RVO
          */
         public void SetNumWorkers(int numWorkers)
         {
-            numWorkers_ = numWorkers;
+            m_NumWorkers = numWorkers;
 
-            if (numWorkers_ <= 0)
+            if (m_NumWorkers <= 0)
             {
                 int completionPorts;
-                ThreadPool.GetMinThreads(out numWorkers_, out completionPorts);
+                ThreadPool.GetMinThreads(out m_NumWorkers, out completionPorts);
             }
-            workers_ = null;
+            m_Workers = null;
         }
 
         /**
@@ -955,7 +949,7 @@ namespace RVO
          */
         public void setTimeStep(float timeStep)
         {
-            timeStep_ = timeStep;
+            TimeStep = timeStep;
         }
 
         /**

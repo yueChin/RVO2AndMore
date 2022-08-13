@@ -54,9 +54,9 @@ namespace RVO
          * computed.</param>
          * <returns>The length of the two-dimensional vector.</returns>
          */
-        public static float abs(Vector2 vector)
+        public static float ABS(Vector2 vector)
         {
-            return sqrt(absSq(vector));
+            return Sqrt(ABSSq(vector));
         }
 
         /**
@@ -68,7 +68,7 @@ namespace RVO
          * <param name="vector">The two-dimensional vector whose squared length
          * is to be computed.</param>
          */
-        public static float absSq(Vector2 vector)
+        public static float ABSSq(Vector2 vector)
         {
             return vector * vector;
         }
@@ -82,9 +82,9 @@ namespace RVO
          * <param name="vector">The two-dimensional vector whose normalization
          * is to be computed.</param>
          */
-        public static Vector2 normalize(Vector2 vector)
+        public static Vector2 Normalize(Vector2 vector)
         {
-            return vector / abs(vector);
+            return vector / ABS(vector);
         }
 
         /**
@@ -100,9 +100,9 @@ namespace RVO
          * <param name="vector2">The bottom row of the two-dimensional square
          * matrix.</param>
          */
-        internal static float det(Vector2 vector1, Vector2 vector2)
+        internal static float Det(Vector2 vector1, Vector2 vector2)
         {
-            return vector1.x_ * vector2.y_ - vector1.y_ * vector2.x_;
+            return vector1.X * vector2.Y - vector1.Y * vector2.X;
         }
 
         /**
@@ -118,21 +118,21 @@ namespace RVO
          * <param name="vector3">The point to which the squared distance is to
          * be calculated.</param>
          */
-        internal static float distSqPointLineSegment(Vector2 vector1, Vector2 vector2, Vector2 vector3)
+        internal static float DistSqPointLineSegment(Vector2 vector1, Vector2 vector2, Vector2 vector3)
         {
-            float r = ((vector3 - vector1) * (vector2 - vector1)) / absSq(vector2 - vector1);
+            float r = ((vector3 - vector1) * (vector2 - vector1)) / ABSSq(vector2 - vector1);
 
             if (r < 0.0f)
             {
-                return absSq(vector3 - vector1);
+                return ABSSq(vector3 - vector1);
             }
 
             if (r > 1.0f)
             {
-                return absSq(vector3 - vector2);
+                return ABSSq(vector3 - vector2);
             }
 
-            return absSq(vector3 - (vector1 + r * (vector2 - vector1)));
+            return ABSSq(vector3 - (vector1 + r * (vector2 - vector1)));
         }
 
         /**
@@ -143,7 +143,7 @@ namespace RVO
          * <param name="scalar">The float of which to compute the absolute
          * value.</param>
          */
-        internal static float fabs(float scalar)
+        internal static float FloatABS(float scalar)
         {
             return Math.Abs(scalar);
         }
@@ -160,9 +160,9 @@ namespace RVO
          * <param name="c">The point to which the signed distance is to be
          * calculated.</param>
          */
-        internal static float leftOf(Vector2 a, Vector2 b, Vector2 c)
+        internal static float LeftOf(Vector2 a, Vector2 b, Vector2 c)
         {
-            return det(a - c, b - a);
+            return Det(a - c, b - a);
         }
 
         /**
@@ -172,7 +172,7 @@ namespace RVO
          *
          * <param name="scalar">The float to be squared.</param>
          */
-        internal static float sqr(float scalar)
+        internal static float Sqr(float scalar)
         {
             return scalar * scalar;
         }
@@ -185,24 +185,24 @@ namespace RVO
          * <param name="scalar">The float of which to compute the square root.
          * </param>
          */
-        internal static float sqrt(float scalar)
+        internal static float Sqrt(float scalar)
         {
             return (float)Math.Sqrt(scalar);
         }
 
-        internal static float max(float a, float b)
+        internal static float Max(float a, float b)
         {
             return (double)a <= (double)b ? b : a;
         }
 
-        internal static float abs(float a)
+        internal static float ABS(float a)
         {
             return a < 0 ? -a : a;
         }
         
-        internal static bool approximately(Vector2 a, Vector2 b)
+        internal static bool Approximately(Vector2 a, Vector2 b)
         {
-            return (double)abs(b - a) < (double)max(1E-06f * max(abs(a), abs(b)), Mathf.Epsilon * 8f);
+            return (double)ABS(b - a) < (double)Max(1E-06f * Max(ABS(a), ABS(b)), Mathf.Epsilon * 8f);
         }
     }
 }

@@ -74,6 +74,7 @@ public class GridBase : MonoBehaviour
                 {
                     continue;
                 }
+
                 int tempX = node.m_GridX + i;
                 int tempY = node.m_GridY + j;
                 if (tempX < m_GridCountX && tempX > 0 && tempY > 0 && tempY < m_GridCountY)
@@ -82,6 +83,7 @@ public class GridBase : MonoBehaviour
                 }
             }
         }
+
         return neighborList;
     }
 
@@ -92,14 +94,16 @@ public class GridBase : MonoBehaviour
         {
             return;
         }
-        foreach (var node in m_Grid)
+
+        foreach (Node node in m_Grid)
         {
             Gizmos.color = node.m_CanWalk ? Color.white : Color.red;
             Gizmos.DrawCube(node.m_WorldPos, Vector3.one * (m_NodeDiameter - 0.1f));
         }
+
         if (m_Path != null)
         {
-            foreach (var node in m_Path)
+            foreach (Node node in m_Path)
             {
                 Gizmos.color = Color.green;
                 Gizmos.DrawCube(node.m_WorldPos, Vector3.one * (m_NodeDiameter - 0.1f));

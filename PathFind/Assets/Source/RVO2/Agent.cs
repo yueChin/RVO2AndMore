@@ -43,41 +43,41 @@ namespace RVO
     {
         static bool msDirectionOpt = false;
 
-        internal IList<KeyValuePair<float, Agent>> agentNeighbors_ = new List<KeyValuePair<float, Agent>>();
-        internal IList<KeyValuePair<float, Obstacle>> obstacleNeighbors_ = new List<KeyValuePair<float, Obstacle>>();
-        internal IList<Line> orcaLines_ = new List<Line>();
-        internal Vector2 position_;
-        internal Vector2 prefVelocity_;
-        internal Vector2 velocity_;
-        internal int id_ = 0;
-        internal int maxNeighbors_ = 0;
-        internal float maxSpeed_ = 0.0f;
-        internal float neighborDist_ = 0.0f;
-        internal float radius_ = 0.0f;
-        internal float timeHorizon_ = 0.0f;
-        internal float timeHorizonObst_ = 0.0f;
+        internal IList<KeyValuePair<float, Agent>> AgentNeighborList = new List<KeyValuePair<float, Agent>>();
+        internal IList<KeyValuePair<float, Obstacle>> ObstacleNeighborList = new List<KeyValuePair<float, Obstacle>>();
+        internal IList<Line> OrcaLines = new List<Line>();
+        internal Vector2 Position;
+        internal Vector2 PrefVelocity;
+        internal Vector2 Velocity;
+        internal int ID = 0;
+        internal int MAXNeighbors = 0;
+        internal float MAXSpeed = 0.0f;
+        internal float NeighborDist = 0.0f;
+        internal float Radius = 0.0f;
+        internal float TimeHorizon = 0.0f;
+        internal float TimeHorizonObst = 0.0f;
 
-        internal float mass_ = 1.0f;
+        internal float Mass = 1.0f;
 
-        internal Vector2 newVelocity_;
+        internal Vector2 NewVelocity;
 
-        internal Vector2 offset;
+        internal Vector2 Offset;
 
         /**
          * <summary>Computes the neighbors of this agent.</summary>
          */
-        internal void computeNeighbors()
+        internal void ComputeNeighbors()
         {
-            obstacleNeighbors_.Clear();
-            float rangeSq = RVOMath.sqr(timeHorizonObst_ * maxSpeed_ + radius_);
-            Simulator.Instance.kdTree_.computeObstacleNeighbors(this, rangeSq);
+            ObstacleNeighborList.Clear();
+            float rangeSq = RVOMath.Sqr(TimeHorizonObst * MAXSpeed + Radius);
+            Simulator.Instance.KdTree.ComputeObstacleNeighbors(this, rangeSq);
 
-            agentNeighbors_.Clear();
+            AgentNeighborList.Clear();
 
-            if (maxNeighbors_ > 0)
+            if (MAXNeighbors > 0)
             {
-                rangeSq = RVOMath.sqr(neighborDist_);
-                Simulator.Instance.kdTree_.computeAgentNeighbors(this, ref rangeSq);
+                rangeSq = RVOMath.Sqr(NeighborDist);
+                Simulator.Instance.KdTree.ComputeAgentNeighbors(this, ref rangeSq);
             }
         }
 
@@ -89,12 +89,12 @@ namespace RVO
             public bool Convex;
         }
 
-        internal void computeObstacleNeighbors(ObstacleTemp obstacle1, ObstacleTemp obstacle2, bool isEqual)
+        internal void ComputeObstacleNeighbors(ObstacleTemp obstacle1, ObstacleTemp obstacle2, bool isEqual)
         {
-            float invTimeHorizonObst = 1.0f / timeHorizonObst_;
+            float invTimeHorizonObst = 1.0f / TimeHorizonObst;
 
-            Vector2 relativePosition1 = obstacle1.Point - position_;
-            Vector2 relativePosition2 = obstacle2.Point - position_;
+            Vector2 relativePosition1 = obstacle1.Point - Position;
+            Vector2 relativePosition2 = obstacle2.Point - Position;
 
             /*
              * Check if velocity obstacle of obstacle is already taken care
@@ -102,10 +102,10 @@ namespace RVO
              */
             bool alreadyCovered = false;
 
-            for (int j = 0; j < orcaLines_.Count; ++j)
+            for (int j = 0; j < OrcaLines.Count; ++j)
             {
-                if (RVOMath.det(invTimeHorizonObst * relativePosition1 - orcaLines_[j].point, orcaLines_[j].direction) - invTimeHorizonObst * radius_ >= -RVOMath.RVO_EPSILON &&
-                    RVOMath.det(invTimeHorizonObst * relativePosition2 - orcaLines_[j].point, orcaLines_[j].direction) - invTimeHorizonObst * radius_ >= -RVOMath.RVO_EPSILON)
+                if (RVOMath.Det(invTimeHorizonObst * relativePosition1 - OrcaLines[j].Point, OrcaLines[j].Direction) - invTimeHorizonObst * Radius >= -RVOMath.RVO_EPSILON &&
+                    RVOMath.Det(invTimeHorizonObst * relativePosition2 - OrcaLines[j].Point, OrcaLines[j].Direction) - invTimeHorizonObst * Radius >= -RVOMath.RVO_EPSILON)
                 {
                     alreadyCovered = true;
 
@@ -119,14 +119,14 @@ namespace RVO
             }
 
             /* Not yet covered. Check for collisions. */
-            float distSq1 = RVOMath.absSq(relativePosition1);
-            float distSq2 = RVOMath.absSq(relativePosition2);
+            float distSq1 = RVOMath.ABSSq(relativePosition1);
+            float distSq2 = RVOMath.ABSSq(relativePosition2);
 
-            float radiusSq = RVOMath.sqr(radius_);
+            float radiusSq = RVOMath.Sqr(Radius);
 
             Vector2 obstacleVector = obstacle2.Point - obstacle1.Point;
-            float s = (-relativePosition1 * obstacleVector) / RVOMath.absSq(obstacleVector);
-            float distSqLine = RVOMath.absSq(-relativePosition1 - s * obstacleVector);
+            float s = (-relativePosition1 * obstacleVector) / RVOMath.ABSSq(obstacleVector);
+            float distSqLine = RVOMath.ABSSq(-relativePosition1 - s * obstacleVector);
 
             Line line;
 
@@ -135,9 +135,9 @@ namespace RVO
                 /* Collision with left vertex. Ignore if non-convex. */
                 if (obstacle1.Convex)
                 {
-                    line.point = new Vector2(0.0f, 0.0f);
-                    line.direction = RVOMath.normalize(new Vector2(-relativePosition1.y(), relativePosition1.x()));
-                    orcaLines_.Add(line);
+                    line.Point = new Vector2(0.0f, 0.0f);
+                    line.Direction = RVOMath.Normalize(new Vector2(-relativePosition1.y(), relativePosition1.x()));
+                    OrcaLines.Add(line);
                 }
 
                 return;
@@ -148,11 +148,11 @@ namespace RVO
                  * Collision with right vertex. Ignore if non-convex or if
                  * it will be taken care of by neighboring obstacle.
                  */
-                if (obstacle2.Convex && RVOMath.det(relativePosition2, obstacle2.Direction) >= 0.0f)
+                if (obstacle2.Convex && RVOMath.Det(relativePosition2, obstacle2.Direction) >= 0.0f)
                 {
-                    line.point = new Vector2(0.0f, 0.0f);
-                    line.direction = RVOMath.normalize(new Vector2(-relativePosition2.y(), relativePosition2.x()));
-                    orcaLines_.Add(line);
+                    line.Point = new Vector2(0.0f, 0.0f);
+                    line.Direction = RVOMath.Normalize(new Vector2(-relativePosition2.y(), relativePosition2.x()));
+                    OrcaLines.Add(line);
                 }
 
                 return;
@@ -160,9 +160,9 @@ namespace RVO
             else if (s >= 0.0f && s < 1.0f && distSqLine <= radiusSq)
             {
                 /* Collision with obstacle segment. */
-                line.point = new Vector2(0.0f, 0.0f);
-                line.direction = -obstacle1.Direction;
-                orcaLines_.Add(line);
+                line.Point = new Vector2(0.0f, 0.0f);
+                line.Direction = -obstacle1.Direction;
+                OrcaLines.Add(line);
 
                 return;
             }
@@ -189,9 +189,9 @@ namespace RVO
 
                 obstacle2 = obstacle1;
 
-                float leg1 = RVOMath.sqrt(distSq1 - radiusSq);
-                leftLegDirection = new Vector2(relativePosition1.x() * leg1 - relativePosition1.y() * radius_, relativePosition1.x() * radius_ + relativePosition1.y() * leg1) / distSq1;
-                rightLegDirection = new Vector2(relativePosition1.x() * leg1 + relativePosition1.y() * radius_, -relativePosition1.x() * radius_ + relativePosition1.y() * leg1) / distSq1;
+                float leg1 = RVOMath.Sqrt(distSq1 - radiusSq);
+                leftLegDirection = new Vector2(relativePosition1.x() * leg1 - relativePosition1.y() * Radius, relativePosition1.x() * Radius + relativePosition1.y() * leg1) / distSq1;
+                rightLegDirection = new Vector2(relativePosition1.x() * leg1 + relativePosition1.y() * Radius, -relativePosition1.x() * Radius + relativePosition1.y() * leg1) / distSq1;
             }
             else if (s > 1.0f && distSqLine <= radiusSq)
             {
@@ -207,17 +207,17 @@ namespace RVO
 
                 obstacle1 = obstacle2;
 
-                float leg2 = RVOMath.sqrt(distSq2 - radiusSq);
-                leftLegDirection = new Vector2(relativePosition2.x() * leg2 - relativePosition2.y() * radius_, relativePosition2.x() * radius_ + relativePosition2.y() * leg2) / distSq2;
-                rightLegDirection = new Vector2(relativePosition2.x() * leg2 + relativePosition2.y() * radius_, -relativePosition2.x() * radius_ + relativePosition2.y() * leg2) / distSq2;
+                float leg2 = RVOMath.Sqrt(distSq2 - radiusSq);
+                leftLegDirection = new Vector2(relativePosition2.x() * leg2 - relativePosition2.y() * Radius, relativePosition2.x() * Radius + relativePosition2.y() * leg2) / distSq2;
+                rightLegDirection = new Vector2(relativePosition2.x() * leg2 + relativePosition2.y() * Radius, -relativePosition2.x() * Radius + relativePosition2.y() * leg2) / distSq2;
             }
             else
             {
                 /* Usual situation. */
                 if (obstacle1.Convex)
                 {
-                    float leg1 = RVOMath.sqrt(distSq1 - radiusSq);
-                    leftLegDirection = new Vector2(relativePosition1.x() * leg1 - relativePosition1.y() * radius_, relativePosition1.x() * radius_ + relativePosition1.y() * leg1) / distSq1;
+                    float leg1 = RVOMath.Sqrt(distSq1 - radiusSq);
+                    leftLegDirection = new Vector2(relativePosition1.x() * leg1 - relativePosition1.y() * Radius, relativePosition1.x() * Radius + relativePosition1.y() * leg1) / distSq1;
                 }
                 else
                 {
@@ -227,8 +227,8 @@ namespace RVO
 
                 if (obstacle2.Convex)
                 {
-                    float leg2 = RVOMath.sqrt(distSq2 - radiusSq);
-                    rightLegDirection = new Vector2(relativePosition2.x() * leg2 + relativePosition2.y() * radius_, -relativePosition2.x() * radius_ + relativePosition2.y() * leg2) / distSq2;
+                    float leg2 = RVOMath.Sqrt(distSq2 - radiusSq);
+                    rightLegDirection = new Vector2(relativePosition2.x() * leg2 + relativePosition2.y() * Radius, -relativePosition2.x() * Radius + relativePosition2.y() * leg2) / distSq2;
                 }
                 else
                 {
@@ -248,14 +248,14 @@ namespace RVO
             bool isLeftLegForeign = false;
             bool isRightLegForeign = false;
 
-            if (obstacle1.Convex && RVOMath.det(leftLegDirection, -obstacle1.PrevDirection) >= 0.0f)
+            if (obstacle1.Convex && RVOMath.Det(leftLegDirection, -obstacle1.PrevDirection) >= 0.0f)
             {
                 /* Left leg points into obstacle. */
                 leftLegDirection = -obstacle1.PrevDirection;
                 isLeftLegForeign = true;
             }
 
-            if (obstacle2.Convex && RVOMath.det(rightLegDirection, obstacle2.Direction) <= 0.0f)
+            if (obstacle2.Convex && RVOMath.Det(rightLegDirection, obstacle2.Direction) <= 0.0f)
             {
                 /* Right leg points into obstacle. */
                 rightLegDirection = obstacle2.Direction;
@@ -263,36 +263,36 @@ namespace RVO
             }
 
             /* Compute cut-off centers. */
-            Vector2 leftCutOff = invTimeHorizonObst * (obstacle1.Point - position_);
-            Vector2 rightCutOff = invTimeHorizonObst * (obstacle2.Point - position_);
+            Vector2 leftCutOff = invTimeHorizonObst * (obstacle1.Point - Position);
+            Vector2 rightCutOff = invTimeHorizonObst * (obstacle2.Point - Position);
             Vector2 cutOffVector = rightCutOff - leftCutOff;
 
             /* Project current velocity on velocity obstacle. */
 
             /* Check if current velocity is projected on cutoff circles. */
-            float t = isEqual ? 0.5f : ((velocity_ - leftCutOff) * cutOffVector) / RVOMath.absSq(cutOffVector);
-            float tLeft = (velocity_ - leftCutOff) * leftLegDirection;
-            float tRight = (velocity_ - rightCutOff) * rightLegDirection;
+            float t = isEqual ? 0.5f : ((Velocity - leftCutOff) * cutOffVector) / RVOMath.ABSSq(cutOffVector);
+            float tLeft = (Velocity - leftCutOff) * leftLegDirection;
+            float tRight = (Velocity - rightCutOff) * rightLegDirection;
 
             if ((t < 0.0f && tLeft < 0.0f) || (isEqual && tLeft < 0.0f && tRight < 0.0f))
             {
                 /* Project on left cut-off circle. */
-                Vector2 unitW = RVOMath.normalize(velocity_ - leftCutOff);
+                Vector2 unitW = RVOMath.Normalize(Velocity - leftCutOff);
 
-                line.direction = new Vector2(unitW.y(), -unitW.x());
-                line.point = leftCutOff + radius_ * invTimeHorizonObst * unitW;
-                orcaLines_.Add(line);
+                line.Direction = new Vector2(unitW.y(), -unitW.x());
+                line.Point = leftCutOff + Radius * invTimeHorizonObst * unitW;
+                OrcaLines.Add(line);
 
                 return;
             }
             else if (t > 1.0f && tRight < 0.0f)
             {
                 /* Project on right cut-off circle. */
-                Vector2 unitW = RVOMath.normalize(velocity_ - rightCutOff);
+                Vector2 unitW = RVOMath.Normalize(Velocity - rightCutOff);
 
-                line.direction = new Vector2(unitW.y(), -unitW.x());
-                line.point = rightCutOff + radius_ * invTimeHorizonObst * unitW;
-                orcaLines_.Add(line);
+                line.Direction = new Vector2(unitW.y(), -unitW.x());
+                line.Point = rightCutOff + Radius * invTimeHorizonObst * unitW;
+                OrcaLines.Add(line);
 
                 return;
             }
@@ -301,16 +301,16 @@ namespace RVO
              * Project on left leg, right leg, or cut-off line, whichever is
              * closest to velocity.
              */
-            float distSqCutoff = (t < 0.0f || t > 1.0f || isEqual) ? float.PositiveInfinity : RVOMath.absSq(velocity_ - (leftCutOff + t * cutOffVector));
-            float distSqLeft = tLeft < 0.0f ? float.PositiveInfinity : RVOMath.absSq(velocity_ - (leftCutOff + tLeft * leftLegDirection));
-            float distSqRight = tRight < 0.0f ? float.PositiveInfinity : RVOMath.absSq(velocity_ - (rightCutOff + tRight * rightLegDirection));
+            float distSqCutoff = (t < 0.0f || t > 1.0f || isEqual) ? float.PositiveInfinity : RVOMath.ABSSq(Velocity - (leftCutOff + t * cutOffVector));
+            float distSqLeft = tLeft < 0.0f ? float.PositiveInfinity : RVOMath.ABSSq(Velocity - (leftCutOff + tLeft * leftLegDirection));
+            float distSqRight = tRight < 0.0f ? float.PositiveInfinity : RVOMath.ABSSq(Velocity - (rightCutOff + tRight * rightLegDirection));
 
             if (distSqCutoff <= distSqLeft && distSqCutoff <= distSqRight)
             {
                 /* Project on cut-off line. */
-                line.direction = -obstacle1.Direction;
-                line.point = leftCutOff + radius_ * invTimeHorizonObst * new Vector2(-line.direction.y(), line.direction.x());
-                orcaLines_.Add(line);
+                line.Direction = -obstacle1.Direction;
+                line.Point = leftCutOff + Radius * invTimeHorizonObst * new Vector2(-line.Direction.y(), line.Direction.x());
+                OrcaLines.Add(line);
 
                 return;
             }
@@ -323,9 +323,9 @@ namespace RVO
                     return;
                 }
 
-                line.direction = leftLegDirection;
-                line.point = leftCutOff + radius_ * invTimeHorizonObst * new Vector2(-line.direction.y(), line.direction.x());
-                orcaLines_.Add(line);
+                line.Direction = leftLegDirection;
+                line.Point = leftCutOff + Radius * invTimeHorizonObst * new Vector2(-line.Direction.y(), line.Direction.x());
+                OrcaLines.Add(line);
 
                 return;
             }
@@ -336,27 +336,27 @@ namespace RVO
                 return;
             }
 
-            line.direction = -rightLegDirection;
-            line.point = rightCutOff + radius_ * invTimeHorizonObst * new Vector2(-line.direction.y(), line.direction.x());
-            orcaLines_.Add(line);
+            line.Direction = -rightLegDirection;
+            line.Point = rightCutOff + Radius * invTimeHorizonObst * new Vector2(-line.Direction.y(), line.Direction.x());
+            OrcaLines.Add(line);
         }
 
 
         internal void computeAgentNeighbors(Agent other)
         {
-            float invTimeHorizon = 1.0f / timeHorizon_;
+            float invTimeHorizon = 1.0f / TimeHorizon;
 
 
-            Vector2 relativePosition = other.position_ - position_;
+            Vector2 relativePosition = other.Position - Position;
 
             // mass
-            float massRatio = (other.mass_ / (mass_ + other.mass_));
-            float neighborMassRatio = (mass_ / (mass_ + other.mass_));
+            float massRatio = (other.Mass / (Mass + other.Mass));
+            float neighborMassRatio = (Mass / (Mass + other.Mass));
             //massRatio = 0.5f;
             //neighborMassRatio = 0.5f;
-            Vector2 velocityOpt = (massRatio >= 0.5f ? (velocity_ - massRatio * velocity_) * 2 : prefVelocity_ + (velocity_ - prefVelocity_) * massRatio * 2);
+            Vector2 velocityOpt = (massRatio >= 0.5f ? (Velocity - massRatio * Velocity) * 2 : PrefVelocity + (Velocity - PrefVelocity) * massRatio * 2);
             Vector2 neighborVelocityOpt =
-                (neighborMassRatio >= 0.5f ? 2 * other.velocity_ * (1 - neighborMassRatio) : other.prefVelocity_ + (other.velocity_ - other.prefVelocity_) * neighborMassRatio * 2);
+                (neighborMassRatio >= 0.5f ? 2 * other.Velocity * (1 - neighborMassRatio) : other.PrefVelocity + (other.Velocity - other.PrefVelocity) * neighborMassRatio * 2);
             ;
 
             //massRatio = 0.5f;
@@ -364,14 +364,14 @@ namespace RVO
             //neighborVelocityOpt = other.velocity_;
 
             Vector2 relativeVelocity = velocityOpt - neighborVelocityOpt;
-            float distSq = RVOMath.absSq(relativePosition);
-            float combinedRadius = radius_ + other.radius_;
-            if (mass_ != other.mass_)
+            float distSq = RVOMath.ABSSq(relativePosition);
+            float combinedRadius = Radius + other.Radius;
+            if (Mass != other.Mass)
             {
                 //combinedRadius = combinedRadius * 0.45f;
             }
 
-            float combinedRadiusSq = RVOMath.sqr(combinedRadius);
+            float combinedRadiusSq = RVOMath.Sqr(combinedRadius);
 
             Line line;
             Vector2 u;
@@ -382,59 +382,59 @@ namespace RVO
                 Vector2 w = relativeVelocity - invTimeHorizon * relativePosition;
 
                 /* Vector from cutoff center to relative velocity. */
-                float wLengthSq = RVOMath.absSq(w);
+                float wLengthSq = RVOMath.ABSSq(w);
                 float dotProduct1 = w * relativePosition;
 
-                if (dotProduct1 < 0.0f && RVOMath.sqr(dotProduct1) > combinedRadiusSq * wLengthSq)
+                if (dotProduct1 < 0.0f && RVOMath.Sqr(dotProduct1) > combinedRadiusSq * wLengthSq)
                 {
                     /* Project on cut-off circle. */
-                    float wLength = RVOMath.sqrt(wLengthSq);
+                    float wLength = RVOMath.Sqrt(wLengthSq);
                     Vector2 unitW = w / wLength;
 
-                    line.direction = new Vector2(unitW.y(), -unitW.x());
+                    line.Direction = new Vector2(unitW.y(), -unitW.x());
                     u = (combinedRadius * invTimeHorizon - wLength) * unitW;
                 }
                 else
                 {
                     /* Project on legs. */
-                    float leg = RVOMath.sqrt(distSq - combinedRadiusSq);
+                    float leg = RVOMath.Sqrt(distSq - combinedRadiusSq);
 
-                    if (RVOMath.det(relativePosition, w) > 0.0f)
+                    if (RVOMath.Det(relativePosition, w) > 0.0f)
                     {
                         /* Project on left leg. */
-                        line.direction = new Vector2(relativePosition.x() * leg - relativePosition.y() * combinedRadius, relativePosition.x() * combinedRadius + relativePosition.y() * leg) / distSq;
+                        line.Direction = new Vector2(relativePosition.x() * leg - relativePosition.y() * combinedRadius, relativePosition.x() * combinedRadius + relativePosition.y() * leg) / distSq;
                     }
                     else
                     {
                         /* Project on right leg. */
-                        line.direction = -new Vector2(relativePosition.x() * leg + relativePosition.y() * combinedRadius, -relativePosition.x() * combinedRadius + relativePosition.y() * leg) / distSq;
+                        line.Direction = -new Vector2(relativePosition.x() * leg + relativePosition.y() * combinedRadius, -relativePosition.x() * combinedRadius + relativePosition.y() * leg) / distSq;
                     }
 
-                    float dotProduct2 = relativeVelocity * line.direction;
-                    u = dotProduct2 * line.direction - relativeVelocity;
+                    float dotProduct2 = relativeVelocity * line.Direction;
+                    u = dotProduct2 * line.Direction - relativeVelocity;
                 }
             }
             else
             {
                 /* Collision. Project on cut-off circle of time timeStep. */
-                float invTimeStep = 1.0f / Simulator.Instance.timeStep_;
+                float invTimeStep = 1.0f / Simulator.Instance.TimeStep;
 
                 /* Vector from cutoff center to relative velocity. */
                 Vector2 w = relativeVelocity - invTimeStep * relativePosition;
 
-                float wLength = RVOMath.abs(w);
+                float wLength = RVOMath.ABS(w);
                 Vector2 unitW = w / wLength;
 
-                line.direction = new Vector2(unitW.y(), -unitW.x());
+                line.Direction = new Vector2(unitW.y(), -unitW.x());
                 u = (combinedRadius * invTimeStep - wLength) * unitW;
             }
 
             //line.point = velocityOpt + 0.5f * u;
-            line.point = velocityOpt + massRatio * u;
-            orcaLines_.Add(line);
+            line.Point = velocityOpt + massRatio * u;
+            OrcaLines.Add(line);
 
             ////////////////////////////////////////////////////////////////////////////////////////////////
-            Test01.mSphereScritps[id_].msGizmosLines.Add(line);
+            Test01.m_SphereScritps[ID].msGizmosLines.Add(line);
             ////////////////////////////////////////////////////////////////////////////////////////////////
         }
 
@@ -443,60 +443,60 @@ namespace RVO
          */
         internal void computeNewVelocity()
         {
-            orcaLines_.Clear();
+            OrcaLines.Clear();
 
 
             /* Create obstacle ORCA lines. */
-            for (int i = 0; i < obstacleNeighbors_.Count; ++i)
+            for (int i = 0; i < ObstacleNeighborList.Count; ++i)
             {
-                Obstacle obstacle1 = obstacleNeighbors_[i].Value;
-                Obstacle obstacle2 = obstacle1.next_;
+                Obstacle obstacle1 = ObstacleNeighborList[i].Value;
+                Obstacle obstacle2 = obstacle1.Next;
                 ObstacleTemp temp1 = new ObstacleTemp()
                 {
-                    Point = obstacle1.point_,
-                    Direction = obstacle1.direction_,
-                    Convex = obstacle1.convex_,
-                    PrevDirection = obstacle1.previous_.direction_
+                    Point = obstacle1.Point,
+                    Direction = obstacle1.Direction,
+                    Convex = obstacle1.Convex,
+                    PrevDirection = obstacle1.Previous.Direction
                 };
                 ObstacleTemp temp2 = new ObstacleTemp()
                 {
-                    Point = obstacle2.point_,
-                    Direction = obstacle2.direction_,
-                    Convex = obstacle2.convex_,
-                    PrevDirection = obstacle2.previous_.direction_
+                    Point = obstacle2.Point,
+                    Direction = obstacle2.Direction,
+                    Convex = obstacle2.Convex,
+                    PrevDirection = obstacle2.Previous.Direction
                 };
-                computeObstacleNeighbors(temp1, temp2, obstacle1 == obstacle2);
+                ComputeObstacleNeighbors(temp1, temp2, obstacle1 == obstacle2);
 
             }
 
-            int numObstLines = orcaLines_.Count;
+            int numObstLines = OrcaLines.Count;
 
-            if (prefVelocity_.x() >= 0.01 || prefVelocity_.y() >= 0.01)
+            if (PrefVelocity.x() >= 0.01 || PrefVelocity.y() >= 0.01)
             {
                 /* Create agent ORCA lines. */
-                for (int i = 0; i < agentNeighbors_.Count; ++i)
+                for (int i = 0; i < AgentNeighborList.Count; ++i)
                 {
-                    Agent other = agentNeighbors_[i].Value;
+                    Agent other = AgentNeighborList[i].Value;
 
                     computeAgentNeighbors(other);
                     continue;
-                    if (other.prefVelocity_.x() < 0.01f && other.prefVelocity_.y() < 0.01f)
+                    if (other.PrefVelocity.x() < 0.01f && other.PrefVelocity.y() < 0.01f)
                     {
                         ObstacleTemp temp1 = new ObstacleTemp()
                         {
-                            Point = position_,
-                            Direction = prefVelocity_,
+                            Point = Position,
+                            Direction = PrefVelocity,
                             Convex = false,
-                            PrevDirection = Vector2.zero
+                            PrevDirection = Vector2.Zero
                         };
                         ObstacleTemp temp2 = new ObstacleTemp()
                         {
-                            Point = position_,
-                            Direction = prefVelocity_,
+                            Point = Position,
+                            Direction = PrefVelocity,
                             Convex = false,
-                            PrevDirection = Vector2.zero
+                            PrevDirection = Vector2.Zero
                         };
-                        computeObstacleNeighbors(temp1, temp2, false);
+                        ComputeObstacleNeighbors(temp1, temp2, false);
                     }
                     else
                     {
@@ -505,22 +505,22 @@ namespace RVO
                 }
             }
 
-            if (mass_ != 1)
+            if (Mass != 1)
             {
                 int i = 1;
             }
 
-            int lineFail = linearProgram2(orcaLines_, maxSpeed_, prefVelocity_, msDirectionOpt, ref newVelocity_);
+            int lineFail = LinearProgram2(OrcaLines, MAXSpeed, PrefVelocity, msDirectionOpt, ref NewVelocity);
             //Debug.LogError((lineFail < orcaLines_.Count) + "            "+   lineFail + "         "  + orcaLines_.Count);
-            if (lineFail < orcaLines_.Count)
+            if (lineFail < OrcaLines.Count)
             {
 
-                if (mass_ != 1)
+                if (Mass != 1)
                 {
                     int i = 1;
                 }
 
-                linearProgram3(orcaLines_, numObstLines, lineFail, maxSpeed_, ref newVelocity_);
+                LinearProgram3(OrcaLines, numObstLines, lineFail, MAXSpeed, ref NewVelocity);
             }
         }
 
@@ -535,28 +535,28 @@ namespace RVO
         {
             if (this != agent)
             {
-                float distSq = RVOMath.absSq(position_ - agent.position_);
+                float distSq = RVOMath.ABSSq(Position - agent.Position);
 
                 if (distSq < rangeSq)
                 {
-                    if (agentNeighbors_.Count < maxNeighbors_)
+                    if (AgentNeighborList.Count < MAXNeighbors)
                     {
-                        agentNeighbors_.Add(new KeyValuePair<float, Agent>(distSq, agent));
+                        AgentNeighborList.Add(new KeyValuePair<float, Agent>(distSq, agent));
                     }
 
-                    int i = agentNeighbors_.Count - 1;
+                    int i = AgentNeighborList.Count - 1;
 
-                    while (i != 0 && distSq < agentNeighbors_[i - 1].Key)
+                    while (i != 0 && distSq < AgentNeighborList[i - 1].Key)
                     {
-                        agentNeighbors_[i] = agentNeighbors_[i - 1];
+                        AgentNeighborList[i] = AgentNeighborList[i - 1];
                         --i;
                     }
 
-                    agentNeighbors_[i] = new KeyValuePair<float, Agent>(distSq, agent);
+                    AgentNeighborList[i] = new KeyValuePair<float, Agent>(distSq, agent);
 
-                    if (agentNeighbors_.Count == maxNeighbors_)
+                    if (AgentNeighborList.Count == MAXNeighbors)
                     {
-                        rangeSq = agentNeighbors_[agentNeighbors_.Count - 1].Key;
+                        rangeSq = AgentNeighborList[AgentNeighborList.Count - 1].Key;
                     }
                 }
             }
@@ -572,23 +572,23 @@ namespace RVO
          */
         internal void insertObstacleNeighbor(Obstacle obstacle, float rangeSq)
         {
-            Obstacle nextObstacle = obstacle.next_;
+            Obstacle nextObstacle = obstacle.Next;
 
-            float distSq = RVOMath.distSqPointLineSegment(obstacle.point_, nextObstacle.point_, position_);
+            float distSq = RVOMath.DistSqPointLineSegment(obstacle.Point, nextObstacle.Point, Position);
 
             if (distSq < rangeSq)
             {
-                obstacleNeighbors_.Add(new KeyValuePair<float, Obstacle>(distSq, obstacle));
+                ObstacleNeighborList.Add(new KeyValuePair<float, Obstacle>(distSq, obstacle));
 
-                int i = obstacleNeighbors_.Count - 1;
+                int i = ObstacleNeighborList.Count - 1;
 
-                while (i != 0 && distSq < obstacleNeighbors_[i - 1].Key)
+                while (i != 0 && distSq < ObstacleNeighborList[i - 1].Key)
                 {
-                    obstacleNeighbors_[i] = obstacleNeighbors_[i - 1];
+                    ObstacleNeighborList[i] = ObstacleNeighborList[i - 1];
                     --i;
                 }
 
-                obstacleNeighbors_[i] = new KeyValuePair<float, Obstacle>(distSq, obstacle);
+                ObstacleNeighborList[i] = new KeyValuePair<float, Obstacle>(distSq, obstacle);
             }
         }
 
@@ -596,13 +596,13 @@ namespace RVO
          * <summary>Updates the two-dimensional position and two-dimensional
          * velocity of this agent.</summary>
          */
-        internal virtual void update()
+        internal virtual void Update()
         {
-            velocity_ = newVelocity_;
-            position_ += velocity_ * Simulator.Instance.timeStep_;
+            Velocity = NewVelocity;
+            Position += Velocity * Simulator.Instance.TimeStep;
 
             ////////////////////////////////////////////////////////////////////////////////////////////////
-            Test01.mSphereScritps[id_].msVelocity = velocity_;
+            Test01.m_SphereScritps[ID].msVelocity = Velocity;
             ////////////////////////////////////////////////////////////////////////////////////////////////
         }
 
@@ -622,10 +622,10 @@ namespace RVO
          * <param name="result">A reference to the result of the linear program.
          * </param>
          */
-        private bool linearProgram1(IList<Line> lines, int lineNo, float radius, Vector2 optVelocity, bool directionOpt, ref Vector2 result)
+        private bool LinearProgram1(IList<Line> lines, int lineNo, float radius, Vector2 optVelocity, bool directionOpt, ref Vector2 result)
         {
-            float dotProduct = lines[lineNo].point * lines[lineNo].direction;
-            float discriminant = RVOMath.sqr(dotProduct) + RVOMath.sqr(radius) - RVOMath.absSq(lines[lineNo].point);
+            float dotProduct = lines[lineNo].Point * lines[lineNo].Direction;
+            float discriminant = RVOMath.Sqr(dotProduct) + RVOMath.Sqr(radius) - RVOMath.ABSSq(lines[lineNo].Point);
 
             if (discriminant < 0.0f)
             {
@@ -633,16 +633,16 @@ namespace RVO
                 return false;
             }
 
-            float sqrtDiscriminant = RVOMath.sqrt(discriminant);
+            float sqrtDiscriminant = RVOMath.Sqrt(discriminant);
             float tLeft = -dotProduct - sqrtDiscriminant;
             float tRight = -dotProduct + sqrtDiscriminant;
 
             for (int i = 0; i < lineNo; ++i)
             {
-                float denominator = RVOMath.det(lines[lineNo].direction, lines[i].direction);
-                float numerator = RVOMath.det(lines[i].direction, lines[lineNo].point - lines[i].point);
+                float denominator = RVOMath.Det(lines[lineNo].Direction, lines[i].Direction);
+                float numerator = RVOMath.Det(lines[i].Direction, lines[lineNo].Point - lines[i].Point);
 
-                if (RVOMath.fabs(denominator) <= RVOMath.RVO_EPSILON)
+                if (RVOMath.FloatABS(denominator) <= RVOMath.RVO_EPSILON)
                 {
                     /* Lines lineNo and i are (almost) parallel. */
                     if (numerator < 0.0f)
@@ -675,33 +675,33 @@ namespace RVO
             if (directionOpt)
             {
                 /* Optimize direction. */
-                if (optVelocity * lines[lineNo].direction > 0.0f)
+                if (optVelocity * lines[lineNo].Direction > 0.0f)
                 {
                     /* Take right extreme. */
-                    result = lines[lineNo].point + tRight * lines[lineNo].direction;
+                    result = lines[lineNo].Point + tRight * lines[lineNo].Direction;
                 }
                 else
                 {
                     /* Take left extreme. */
-                    result = lines[lineNo].point + tLeft * lines[lineNo].direction;
+                    result = lines[lineNo].Point + tLeft * lines[lineNo].Direction;
                 }
             }
             else
             {
                 /* Optimize closest point. */
-                float t = lines[lineNo].direction * (optVelocity - lines[lineNo].point);
+                float t = lines[lineNo].Direction * (optVelocity - lines[lineNo].Point);
 
                 if (t < tLeft)
                 {
-                    result = lines[lineNo].point + tLeft * lines[lineNo].direction;
+                    result = lines[lineNo].Point + tLeft * lines[lineNo].Direction;
                 }
                 else if (t > tRight)
                 {
-                    result = lines[lineNo].point + tRight * lines[lineNo].direction;
+                    result = lines[lineNo].Point + tRight * lines[lineNo].Direction;
                 }
                 else
                 {
-                    result = lines[lineNo].point + t * lines[lineNo].direction;
+                    result = lines[lineNo].Point + t * lines[lineNo].Direction;
                 }
             }
 
@@ -723,7 +723,7 @@ namespace RVO
          * <param name="result">A reference to the result of the linear program.
          * </param>
          */
-        private int linearProgram2(IList<Line> lines, float radius, Vector2 optVelocity, bool directionOpt, ref Vector2 result)
+        private int LinearProgram2(IList<Line> lines, float radius, Vector2 optVelocity, bool directionOpt, ref Vector2 result)
         {
             // directionOpt 第一次为false，第二次为true，directionOpt主要用在 linearProgram1 里面
             if (directionOpt)
@@ -735,11 +735,11 @@ namespace RVO
                 // 1.这个其实没什么用，只是因为velocity是归一化的所以直接乘 radius
                 result = optVelocity * radius;
             }
-            else if (RVOMath.absSq(optVelocity) > RVOMath.sqr(radius))
+            else if (RVOMath.ABSSq(optVelocity) > RVOMath.Sqr(radius))
             {
                 /* Optimize closest point and outside circle. */
                 // 2.当 optVelocity 太大时，先归一化optVelocity，再乘 radius
-                result = RVOMath.normalize(optVelocity) * radius;
+                result = RVOMath.Normalize(optVelocity) * radius;
             }
             else
             {
@@ -750,11 +750,11 @@ namespace RVO
 
             for (int i = 0; i < lines.Count; ++i)
             {
-                if (RVOMath.det(lines[i].direction, lines[i].point - result) > 0.0f)
+                if (RVOMath.Det(lines[i].Direction, lines[i].Point - result) > 0.0f)
                 {
                     /* Result does not satisfy constraint i. Compute new optimal result. */
                     Vector2 tempResult = result;
-                    if (!linearProgram1(lines, i, radius, optVelocity, directionOpt, ref result))
+                    if (!LinearProgram1(lines, i, radius, optVelocity, directionOpt, ref result))
                     {
                         result = tempResult;
                         return i;
@@ -777,10 +777,10 @@ namespace RVO
          * <param name="result">A reference to the result of the linear program.
          * </param>
          */
-        private void linearProgram3(IList<Line> lines, int numObstLines, int beginLine, float radius, ref Vector2 result)
+        private void LinearProgram3(IList<Line> lines, int numObstLines, int beginLine, float radius, ref Vector2 result)
         {
 
-            if (mass_ != 1)
+            if (Mass != 1)
             {
                 Debug.Log("linearProgram3 beginLine:" + beginLine);
             }
@@ -790,7 +790,7 @@ namespace RVO
             for (int i = beginLine; i < lines.Count; ++i)
             {
                 // 每一条 ORCA 线都需要精确的做出处理，distance 为 最大违规的速度
-                if (RVOMath.det(lines[i].direction, lines[i].point - result) > distance)
+                if (RVOMath.Det(lines[i].Direction, lines[i].Point - result) > distance)
                 {
                     /* Result does not satisfy constraint of line i. */
                     IList<Line> projLines = new List<Line>();
@@ -805,12 +805,12 @@ namespace RVO
                     {
                         Line line;
 
-                        float determinant = RVOMath.det(lines[i].direction, lines[j].direction);
+                        float determinant = RVOMath.Det(lines[i].Direction, lines[j].Direction);
 
-                        if (RVOMath.fabs(determinant) <= RVOMath.RVO_EPSILON)
+                        if (RVOMath.FloatABS(determinant) <= RVOMath.RVO_EPSILON)
                         {
                             /* Line i and line j are parallel. */
-                            if (lines[i].direction * lines[j].direction > 0.0f)
+                            if (lines[i].Direction * lines[j].Direction > 0.0f)
                             {
                                 /* Line i and line j point in the same direction. */
                                 // 2-1 两条线平行且同向
@@ -820,24 +820,24 @@ namespace RVO
                             {
                                 /* Line i and line j point in opposite direction. */
                                 // 2-2 两条线平行且反向
-                                line.point = 0.5f * (lines[i].point + lines[j].point);
+                                line.Point = 0.5f * (lines[i].Point + lines[j].Point);
                             }
                         }
                         else
                         {
                             // 2-3 两条线不平行
-                            line.point = lines[i].point + (RVOMath.det(lines[j].direction, lines[i].point - lines[j].point) / determinant) * lines[i].direction;
+                            line.Point = lines[i].Point + (RVOMath.Det(lines[j].Direction, lines[i].Point - lines[j].Point) / determinant) * lines[i].Direction;
                         }
 
                         // 计算ORCA线的方向
-                        line.direction = RVOMath.normalize(lines[j].direction - lines[i].direction);
+                        line.Direction = RVOMath.Normalize(lines[j].Direction - lines[i].Direction);
                         projLines.Add(line);
                     }
 
                     // 3.再次计算最优速度
                     Vector2 tempResult = result;
                     // 注意这里的 new Vector2(-lines[i].direction.y(), lines[i].direction.x()) 是方向向量
-                    if (linearProgram2(projLines, radius, new Vector2(-lines[i].direction.y(), lines[i].direction.x()), true, ref result) < projLines.Count)
+                    if (LinearProgram2(projLines, radius, new Vector2(-lines[i].Direction.y(), lines[i].Direction.x()), true, ref result) < projLines.Count)
                     {
                         /*
                          * This should in principle not happen. The result is by
@@ -848,7 +848,7 @@ namespace RVO
                         result = tempResult;
                     }
 
-                    distance = RVOMath.det(lines[i].direction, lines[i].point - result);
+                    distance = RVOMath.Det(lines[i].Direction, lines[i].Point - result);
                 }
             }
         }

@@ -5,148 +5,173 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Astar {
-	public static Astar instance = new Astar();
-	int mycount = 0;
-	BinaryHeap openList = new BinaryHeap();
-	Dictionary<int, AsGrid> gridMap = new Dictionary<int, AsGrid>();
-	byte[][] mapdt;
-	int COL;
-	int ROW;
-	int EndX;
-	int EndY;
-	int limitR;
+public class AStar
+{
+	public static AStar Instance = new AStar();
+	private int mycount = 0;
+	private readonly BinaryHeap m_OpenList = new BinaryHeap();
+	private readonly Dictionary<int, AsGrid> m_GridMap = new Dictionary<int, AsGrid>();
+	private byte[][] mapdt;
+	private int m_Col;
+	private int m_Row;
+	private int m_EndX;
+	private int m_EndY;
+	private int m_LimitR;
 
-	void open(int x, int y, int cost, AsGrid parent, bool create) {
+	private void Open(int x, int y, int cost, AsGrid parent, bool create)
+	{
 		AsGrid grid;
 
-		if (create) {
+		if (create)
+		{
 			grid = new AsGrid();
-			grid.x = x;
-			grid.y = y;
-			grid.cost = cost;
-			grid.parent = parent;
-			grid.closed = false;
-			grid.score = 10000;
-			gridMap[(y << 16) + x]= grid;
-			int dx = Mathf.Abs(x - EndX);
-			int dy = Mathf.Abs(y - EndY);
-			if (dx > 0 && dy > 0) {
-				grid.last = 14;
-			} else {
-				grid.last = 10;
+			grid.X = x;
+			grid.Y = y;
+			grid.Cost = cost;
+			grid.Parent = parent;
+			grid.Closed = false;
+			grid.Score = 10000;
+			m_GridMap[(y << 16) + x] = grid;
+			int dx = Mathf.Abs(x - m_EndX);
+			int dy = Mathf.Abs(y - m_EndY);
+			if (dx > 0 && dy > 0)
+			{
+				grid.Last = 14;
+			}
+			else
+			{
+				grid.Last = 10;
 			}
 
-			grid.score = grid.cost + grid.last;
-			openList.push(grid);
-		} else {
-			grid = gridMap[((y << 16) + x)];
-			grid.parent = parent;
+			grid.Score = grid.Cost + grid.Last;
+			m_OpenList.Push(grid);
+		}
+		else
+		{
+			grid = m_GridMap[((y << 16) + x)];
+			grid.Parent = parent;
 			;
-			grid.cost = cost;
-			openList.updata(grid, grid.cost + grid.last);
+			grid.Cost = cost;
+			m_OpenList.Updata(grid, grid.Cost + grid.Last);
 		}
 
 		mycount++;
 
 	}
 
-	void check(int new_x, int new_y, AsGrid grid, int cost) {
+	private void Check(int new_x, int new_y, AsGrid grid, int cost)
+	{
 
-		if (Mathf.Abs(new_x - EndX) > limitR || Mathf.Abs(new_y - EndY) > limitR)
+		if (Mathf.Abs(new_x - m_EndX) > m_LimitR || Mathf.Abs(new_y - m_EndY) > m_LimitR)
 			return;
-		if (isBlock(new_x, new_y)) {
+		if (IsBlock(new_x, new_y))
+		{
 			return;
 		}
 
 		AsGrid newGrid = null;
-		
-		 
-		if (!gridMap.TryGetValue((new_y << 16) + new_x,out newGrid)) {
-			open(new_x, new_y, grid.cost + cost, grid, true);
-		} else if (!newGrid.closed && newGrid.cost > grid.cost + cost) {
-			open(new_x, new_y, grid.cost + cost, grid, false);
+
+
+		if (!m_GridMap.TryGetValue((new_y << 16) + new_x, out newGrid))
+		{
+			Open(new_x, new_y, grid.Cost + cost, grid, true);
+		}
+		else if (!newGrid.Closed && newGrid.Cost > grid.Cost + cost)
+		{
+			Open(new_x, new_y, grid.Cost + cost, grid, false);
 		}
 
 	}
 
-	bool isBlock(int x, int y) {
+	private bool IsBlock(int x, int y)
+	{
 		try
 		{
-			return (y >= ROW || x >= COL)||(x<0||y<0) || (mapdt[y][x] & 0x1) != 0;
+			return (y >= m_Row || x >= m_Col) || (x < 0 || y < 0) || (mapdt[y][x] & 0x1) != 0;
 		}
 		catch (Exception e)
 		{
-			Debug.LogError(x+","+y);
+			Debug.LogError(x + "," + y);
 			return true;
 		}
 
-		
+
 	}
 
-	List<AstarPosVo> getRst(AsGrid grid) {
-		List<AstarPosVo> return_dt = new List<AstarPosVo>();
-		do {
-			AstarPosVo pos = new AstarPosVo();
-			pos.x =  grid.x;
-			pos.y =  grid.y;
-			grid = grid.parent;
+	private List<AStarPosVo> GetRst(AsGrid grid)
+	{
+		List<AStarPosVo> return_dt = new List<AStarPosVo>();
+		do
+		{
+			AStarPosVo pos = new AStarPosVo();
+			pos.X = grid.X;
+			pos.Y = grid.Y;
+			grid = grid.Parent;
 			return_dt.Insert(0, pos);
 		} while (grid != null);
+
 		return (return_dt.Count > 2 ? return_dt : null);
 	}
 
-	public List<AstarPosVo> find(byte[][] mapdata, int row, int col,
-			int start_x, int start_y, int end_x, int end_y, int limitR) {
+	public List<AStarPosVo> Find(byte[][] mapdata, int row, int col, int startX, int startY, int endX, int endY, int limitR)
+	{
 
 		mapdt = mapdata;
-		this.limitR = limitR;
+		this.m_LimitR = limitR;
 
-		if (start_x == end_x && start_y == end_y)
+		if (startX == endX && startY == endY)
 			return null;
-		ROW = row;
-		COL = col;
-		EndX = end_x;
-		EndY = end_y;
-		if (isBlock(start_x, start_y)) {
-			return null;
-		}
-		if (isBlock(end_x, end_y)) {
+		m_Row = row;
+		m_Col = col;
+		m_EndX = endX;
+		m_EndY = endY;
+		if (IsBlock(startX, startY))
+		{
 			return null;
 		}
-		List<AstarPosVo> rst = null;
 
-		open(start_x, start_y, 0, null, true);
+		if (IsBlock(endX, endY))
+		{
+			return null;
+		}
 
-		while (true) {
-			int len = openList.length;
-			if (len == 0) {
+		List<AStarPosVo> rst = null;
+
+		Open(startX, startY, 0, null, true);
+
+		while (true)
+		{
+			int len = m_OpenList.Length;
+			if (len == 0)
+			{
 				break;
 			}
-			AsGrid c_grid = openList.popMix();
 
-			if (c_grid.x == end_x && c_grid.y == end_y) {
+			AsGrid c_grid = m_OpenList.PopMix();
 
-				rst = getRst(c_grid);
+			if (c_grid.X == endX && c_grid.Y == endY)
+			{
+
+				rst = GetRst(c_grid);
 				break;
 			}
-			c_grid.closed = true;
-			int x = c_grid.x;
-			int y = c_grid.y;
 
-			check(x, y - 1, c_grid, 10);
-			check(x - 1, y, c_grid, 10);
-			check(x + 1, y, c_grid, 10);
-			check(x, y + 1, c_grid, 10);
-			check(x - 1, y - 1, c_grid, 14);
-			check(x + 1, y - 1, c_grid, 14);
-			check(x - 1, y + 1, c_grid, 14);
-			check(x + 1, y + 1, c_grid, 14);
+			c_grid.Closed = true;
+			int x = c_grid.X;
+			int y = c_grid.Y;
+
+			Check(x, y - 1, c_grid, 10);
+			Check(x - 1, y, c_grid, 10);
+			Check(x + 1, y, c_grid, 10);
+			Check(x, y + 1, c_grid, 10);
+			Check(x - 1, y - 1, c_grid, 14);
+			Check(x + 1, y - 1, c_grid, 14);
+			Check(x - 1, y + 1, c_grid, 14);
+			Check(x + 1, y + 1, c_grid, 14);
 		}
 
-		gridMap.Clear();
-		openList.clear();
+		m_GridMap.Clear();
+		m_OpenList.Clear();
 		return rst;
 	}
-
 }

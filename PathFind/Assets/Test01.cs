@@ -7,24 +7,26 @@ public class Test01 : MonoBehaviour
 {
     public GameObject mSpherePrefab01;
     public GameObject mSpherePrefab02;
+    
+    public int row = 22;
+    public int col = 22;
+    private byte[][] m_Mapdata;
+    private List<AStarPosVo> m_PosList;
 
-    List<GameObject> mSpheres = new List<GameObject>();
-    IList<RVO.Vector2> goals;
-    System.Random random;
-
+    public float Speed = 3f;
+    public float Space = 1.1f;
+    public int N = 20;//方阵长宽
+    private readonly List<GameObject> m_SphereList = new List<GameObject>();
+    private IList<RVO.Vector2> m_GoalList;
+    System.Random m_Random;
     private RVO.Vector2 groupGoal;
-    float speed = 3f;
+    public static List<Sphere> m_SphereScritps = new List<Sphere>();
 
-    public static List<Sphere> mSphereScritps = new List<Sphere>();
-
-    float space = 1.1f;
-
-    int N = 20;
 
     void Start()
     {
-        goals = new List<RVO.Vector2>();
-        random = new System.Random();
+        m_GoalList = new List<RVO.Vector2>();
+        m_Random = new System.Random();
 
         // 创建静态阻挡
         GameObject[] obj = FindObjectsOfType(typeof(GameObject)) as GameObject[];
@@ -40,14 +42,14 @@ public class Test01 : MonoBehaviour
                 obstacle.Add(new RVO.Vector2(position.x - scale.x / 2, position.z + scale.z / 2));
                 obstacle.Add(new RVO.Vector2(position.x - scale.x / 2, position.z - scale.z / 2));
                 obstacle.Add(new RVO.Vector2(position.x + scale.x / 2, position.z - scale.z / 2));
-                Simulator.Instance.addObstacle(obstacle);
+                Simulator.Instance.AddObstacle(obstacle);
             }
         }
 
-        Simulator.Instance.processObstacles();
+        Simulator.Instance.ProcessObstacles();
 
         // 创建小球
-        Simulator.Instance.SetAgentDefaults(10.0f, 10, 1f, 1.0f, 0.5f, speed, new RVO.Vector2(0.0f, 0.0f));
+        Simulator.Instance.SetAgentDefaults(10.0f, 10, 1f, 1.0f, 0.5f, Speed, new RVO.Vector2(0.0f, 0.0f));
         //CreateSquad(new Vector3(-30, 0, 0), mSpherePrefab01, 1f);
         //CreateSquad(new Vector3(30, 0, 0), mSpherePrefab02, 1f);
 
@@ -69,16 +71,16 @@ public class Test01 : MonoBehaviour
             for (int j = 0; j < N; j++)
             {
                 // orca
-                RVO.Vector2 p = new RVO.Vector2(i * space + position.x, j * space + position.z);
+                RVO.Vector2 p = new RVO.Vector2(i * Space + position.x, j * Space + position.z);
                 int id = Simulator.Instance.GetDefaultAgent(p);
                 Simulator.Instance.SetWorldAgentMass(id, mass);
                 // 目标点
-                goals.Add(p);
+                m_GoalList.Add(p);
                 // 物体
                 GameObject g = GameObject.Instantiate(spherePrefab);
-                mSpheres.Add(g);
+                m_SphereList.Add(g);
                 g.transform.localScale = g.transform.localScale * 0.5f;
-                mSphereScritps.Add(g.AddComponent<Sphere>());
+                m_SphereScritps.Add(g.AddComponent<Sphere>());
             }
         }
     }
@@ -86,18 +88,18 @@ public class Test01 : MonoBehaviour
     // 大球
     void CreateGameObject(Vector3 position, GameObject spherePrefab, float diamV2)
     {
-        Simulator.Instance.SetAgentDefaults(60, 10, 1f, 1.0f, diamV2 / 2f, speed, new RVO.Vector2(0.0f, 0.0f));
+        Simulator.Instance.SetAgentDefaults(60, 10, 1f, 1.0f, diamV2 / 2f, Speed, new RVO.Vector2(0.0f, 0.0f));
         // orca
         RVO.Vector2 p = new RVO.Vector2(position.x, position.z);
         int id = Simulator.Instance.GetDefaultAgent(p);
         Simulator.Instance.SetWorldAgentMass(id, 2.5f);
         // 目标点
-        goals.Add(p);
+        m_GoalList.Add(p);
         // 物体
         GameObject g = GameObject.Instantiate(mSpherePrefab01);
         g.transform.localScale = new Vector3(diamV2, diamV2, diamV2);
-        mSpheres.Add(g);
-        mSphereScritps.Add(g.AddComponent<Sphere>());
+        m_SphereList.Add(g);
+        m_SphereScritps.Add(g.AddComponent<Sphere>());
     }
 
     void CreateGroup(Vector3 position, GameObject spherePrefab, float mass)
@@ -109,7 +111,7 @@ public class Test01 : MonoBehaviour
             {
                 
                 // orca
-                RVO.Vector2 p = new RVO.Vector2(i * space + position.x, j * space + position.z);
+                RVO.Vector2 p = new RVO.Vector2(i * Space + position.x, j * Space + position.z);
                 int id = Simulator.Instance.GetDefaultAgent(p,false);
                 Simulator.Instance.SetWorldAgentMass(id, mass);
                 Agent agent = Simulator.Instance.GetWorldAgent(id);
@@ -117,20 +119,17 @@ public class Test01 : MonoBehaviour
                 {
                     Debug.LogError(id);
                 }
-                agent.maxNeighbors_ = 10;
+                agent.MAXNeighbors = 10;
                 group.AddChild(agent);
                 // 目标点
                 // 物体
                 GameObject g = GameObject.Instantiate(spherePrefab);
-                mSpheres.Add(g);
+                m_SphereList.Add(g);
                 g.transform.localScale = g.transform.localScale * 0.5f;
-                mSphereScritps.Add(g.AddComponent<Sphere>());
+                m_SphereScritps.Add(g.AddComponent<Sphere>());
             }
         }
-        goals.Add(group.position_);
-        Debug.LogError(group.m_PadMax + "                  " + group.m_PadMin);
-        Debug.LogError(group.position_);
-        Debug.LogError(group.radius_);
+        m_GoalList.Add(group.Position);
         Simulator.Instance.AddAgent(group);
     }
     
@@ -146,7 +145,7 @@ public class Test01 : MonoBehaviour
         for (int i = 0; i < Simulator.Instance.GetWorldNumAgents(); ++i)
         {
             RVO.Vector2 p = Simulator.Instance.GetWorldAgentPosition(i);
-            mSpheres[i].transform.position = new Vector3(p.x(), 0, p.y());//GO赋值
+            m_SphereList[i].transform.position = new Vector3(p.x(), 0, p.y());//GO赋值
         }
 
         if (Input.GetKey(KeyCode.Q))
@@ -188,7 +187,7 @@ public class Test01 : MonoBehaviour
 
                     if (key == 3)
                     {
-                        goals[goals.Count - 1] = new RVO.Vector2(position.x, position.z);
+                        m_GoalList[m_GoalList.Count - 1] = new RVO.Vector2(position.x, position.z);
                     }
                     else if (key == 1 || key == 2)
                     {
@@ -196,8 +195,8 @@ public class Test01 : MonoBehaviour
                         {
                             for (int j = 0; j < N; j++)
                             {
-                                RVO.Vector2 p = new RVO.Vector2(i * space + position.x, j * space + position.z);
-                                goals[index++] = p;
+                                RVO.Vector2 p = new RVO.Vector2(i * Space + position.x, j * Space + position.z);
+                                m_GoalList[index++] = p;
                             }
                         }
                     }
@@ -214,21 +213,21 @@ public class Test01 : MonoBehaviour
 
     void setPreferredVelocities()
     {
-        for (int i = 0; i < Simulator.Instance.getNumAgents(); ++i)
+        for (int i = 0; i < Simulator.Instance.GetNumAgents(); ++i)
         {
-            RVO.Vector2 goalVector = goals[i] - Simulator.Instance.getAgentPosition(i);
+            RVO.Vector2 goalVector = m_GoalList[i] - Simulator.Instance.GetAgentPosition(i);
 
-            if (RVOMath.absSq(goalVector) > 1.0f)
+            if (RVOMath.ABSSq(goalVector) > 1.0f)
             {
-                goalVector = RVOMath.normalize(goalVector) * speed;
+                goalVector = RVOMath.Normalize(goalVector) * Speed;
             }
 
-            Simulator.Instance.setAgentPrefVelocity(i, goalVector);
+            Simulator.Instance.SetAgentPrefVelocity(i, goalVector);
 
-            float angle = (float)random.NextDouble() * 2.0f * (float)Math.PI;
-            float dist = (float)random.NextDouble() * 0.0001f;
+            float angle = (float)m_Random.NextDouble() * 2.0f * (float)Math.PI;
+            float dist = (float)m_Random.NextDouble() * 0.0001f;
 
-            Simulator.Instance.setAgentPrefVelocity(i, Simulator.Instance.getAgentPrefVelocity(i) + dist * new RVO.Vector2((float)Math.Cos(angle), (float)Math.Sin(angle)));
+            Simulator.Instance.SetAgentPrefVelocity(i, Simulator.Instance.getAgentPrefVelocity(i) + dist * new RVO.Vector2((float)Math.Cos(angle), (float)Math.Sin(angle)));
         }
     }
 
