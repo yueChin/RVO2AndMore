@@ -8,12 +8,12 @@ using UnityEngine;
 public class AStar
 {
 	public static AStar Instance = new AStar();
-	private int mycount = 0;
+	private int m_MyCount = 0;
 	private readonly BinaryHeap m_OpenList = new BinaryHeap();
 	private readonly Dictionary<int, AsGrid> m_GridMap = new Dictionary<int, AsGrid>();
-	private byte[][] mapdt;
-	private int m_Col;
-	private int m_Row;
+	private byte[][] m_MapData;
+	private int m_ColX;
+	private int m_RowY;
 	private int m_EndX;
 	private int m_EndY;
 	private int m_LimitR;
@@ -24,13 +24,15 @@ public class AStar
 
 		if (create)
 		{
-			grid = new AsGrid();
-			grid.X = x;
-			grid.Y = y;
-			grid.Cost = cost;
-			grid.Parent = parent;
-			grid.Closed = false;
-			grid.Score = 10000;
+			grid = new AsGrid
+			{
+				X = x,
+				Y = y,
+				Cost = cost,
+				Parent = parent,
+				Closed = false,
+				Score = 10000
+			};
 			m_GridMap[(y << 16) + x] = grid;
 			int dx = Mathf.Abs(x - m_EndX);
 			int dy = Mathf.Abs(y - m_EndY);
@@ -55,30 +57,27 @@ public class AStar
 			m_OpenList.Updata(grid, grid.Cost + grid.Last);
 		}
 
-		mycount++;
+		m_MyCount++;
 
 	}
 
-	private void Check(int new_x, int new_y, AsGrid grid, int cost)
+	private void Check(int newColX, int newRowY, AsGrid grid, int cost)
 	{
 
-		if (Mathf.Abs(new_x - m_EndX) > m_LimitR || Mathf.Abs(new_y - m_EndY) > m_LimitR)
+		if (Mathf.Abs(newColX - m_EndX) > m_LimitR || Mathf.Abs(newRowY - m_EndY) > m_LimitR)
 			return;
-		if (IsBlock(new_x, new_y))
+		if (IsBlock(newColX, newRowY))
 		{
 			return;
 		}
 
-		AsGrid newGrid = null;
-
-
-		if (!m_GridMap.TryGetValue((new_y << 16) + new_x, out newGrid))
+		if (!m_GridMap.TryGetValue((newRowY << 16) + newColX, out AsGrid newGrid))
 		{
-			Open(new_x, new_y, grid.Cost + cost, grid, true);
+			Open(newColX, newRowY, grid.Cost + cost, grid, true);
 		}
 		else if (!newGrid.Closed && newGrid.Cost > grid.Cost + cost)
 		{
-			Open(new_x, new_y, grid.Cost + cost, grid, false);
+			Open(newColX, newRowY, grid.Cost + cost, grid, false);
 		}
 
 	}
@@ -87,7 +86,12 @@ public class AStar
 	{
 		try
 		{
-			return (y >= m_Row || x >= m_Col) || (x < 0 || y < 0) || (mapdt[y][x] & 0x1) != 0;
+			bool isBlock = (x >= m_ColX || y >= m_RowY ) || (x < 0 || y < 0) || (m_MapData[x][y] & 0x1) != 0;
+			// if (isBlock)
+			// {
+			// 	Debug.LogError($"挡住了 {x} {m_ColX}  {y} {m_RowY}  {m_MapData[x][y]}  {(m_MapData[x][y] & 0x1)}");
+			// }
+			return isBlock;
 		}
 		catch (Exception e)
 		{
@@ -100,29 +104,31 @@ public class AStar
 
 	private List<AStarPosVo> GetRst(AsGrid grid)
 	{
-		List<AStarPosVo> return_dt = new List<AStarPosVo>();
+		List<AStarPosVo> retPath = new List<AStarPosVo>();
 		do
 		{
-			AStarPosVo pos = new AStarPosVo();
-			pos.X = grid.X;
-			pos.Y = grid.Y;
+			AStarPosVo pos = new AStarPosVo
+			{
+				X = grid.X,
+				Y = grid.Y
+			};
 			grid = grid.Parent;
-			return_dt.Insert(0, pos);
+			retPath.Insert(0, pos);
 		} while (grid != null);
 
-		return (return_dt.Count > 2 ? return_dt : null);
+		return (retPath.Count > 2 ? retPath : null);
 	}
 
-	public List<AStarPosVo> Find(byte[][] mapdata, int row, int col, int startX, int startY, int endX, int endY, int limitR)
+	public List<AStarPosVo> Find(byte[][] mapdata, int col, int row, int startX, int startY, int endX, int endY, int limitR)
 	{
 
-		mapdt = mapdata;
+		m_MapData = mapdata;
 		this.m_LimitR = limitR;
 
 		if (startX == endX && startY == endY)
 			return null;
-		m_Row = row;
-		m_Col = col;
+		m_ColX = col;
+		m_RowY = row;
 		m_EndX = endX;
 		m_EndY = endY;
 		if (IsBlock(startX, startY))
@@ -147,27 +153,26 @@ public class AStar
 				break;
 			}
 
-			AsGrid c_grid = m_OpenList.PopMix();
+			AsGrid grid = m_OpenList.PopMix();
 
-			if (c_grid.X == endX && c_grid.Y == endY)
+			if (grid.X == endX && grid.Y == endY)
 			{
 
-				rst = GetRst(c_grid);
+				rst = GetRst(grid);
 				break;
 			}
 
-			c_grid.Closed = true;
-			int x = c_grid.X;
-			int y = c_grid.Y;
-
-			Check(x, y - 1, c_grid, 10);
-			Check(x - 1, y, c_grid, 10);
-			Check(x + 1, y, c_grid, 10);
-			Check(x, y + 1, c_grid, 10);
-			Check(x - 1, y - 1, c_grid, 14);
-			Check(x + 1, y - 1, c_grid, 14);
-			Check(x - 1, y + 1, c_grid, 14);
-			Check(x + 1, y + 1, c_grid, 14);
+			grid.Closed = true;
+			int x = grid.X;
+			int y = grid.Y;
+			Check(x - 1, y, grid, 10);
+			Check(x, y - 1, grid, 10);
+			Check(x, y + 1, grid, 10);
+			Check(x + 1, y, grid, 10);
+			Check(x - 1, y - 1, grid, 14);
+			Check(x - 1, y + 1, grid, 14);
+			Check(x + 1, y - 1, grid, 14);
+			Check(x + 1, y + 1, grid, 14);
 		}
 
 		m_GridMap.Clear();

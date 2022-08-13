@@ -43,8 +43,8 @@ namespace RVO
         public static readonly Vector2 Zero = new Vector2(0.0f, 0.0f);
         public static readonly Vector2 MAX = new Vector2(float.MaxValue, float.MaxValue);
         public static readonly Vector2 MIN = new Vector2(float.MinValue, float.MinValue);
-        internal float X;
-        internal float Y;
+        internal float m_X;
+        internal float m_Y;
 
         /**
          * <summary>Constructs and initializes a two-dimensional vector from the
@@ -57,8 +57,8 @@ namespace RVO
          */
         public Vector2(float x, float y)
         {
-            X = x;
-            Y = y;
+            m_X = x;
+            m_Y = y;
         }
 
         /**
@@ -68,7 +68,7 @@ namespace RVO
          */
         public override string ToString()
         {
-            return "(" + X.ToString(new CultureInfo("").NumberFormat) + "," + Y.ToString(new CultureInfo("").NumberFormat) + ")";
+            return "(" + m_X.ToString(new CultureInfo("").NumberFormat) + "," + m_Y.ToString(new CultureInfo("").NumberFormat) + ")";
         }
 
         /**
@@ -77,9 +77,9 @@ namespace RVO
          *
          * <returns>The x-coordinate of the two-dimensional vector.</returns>
          */
-        public float x()
+        public float X()
         {
-            return X;
+            return m_X;
         }
 
         /**
@@ -88,9 +88,9 @@ namespace RVO
          *
          * <returns>The y-coordinate of the two-dimensional vector.</returns>
          */
-        public float y()
+        public float Y()
         {
-            return Y;
+            return m_Y;
         }
 
         /**
@@ -105,7 +105,7 @@ namespace RVO
          */
         public static float operator *(Vector2 vector1, Vector2 vector2)
         {
-            return vector1.X * vector2.X + vector1.Y * vector2.Y;
+            return vector1.m_X * vector2.m_X + vector1.m_Y * vector2.m_Y;
         }
 
         /**
@@ -135,7 +135,7 @@ namespace RVO
          */
         public static Vector2 operator *(Vector2 vector, float scalar)
         {
-            return new Vector2(vector.X * scalar, vector.Y * scalar);
+            return new Vector2(vector.m_X * scalar, vector.m_Y * scalar);
         }
 
         /**
@@ -150,7 +150,7 @@ namespace RVO
          */
         public static Vector2 operator /(Vector2 vector, float scalar)
         {
-            return new Vector2(vector.X / scalar, vector.Y / scalar);
+            return new Vector2(vector.m_X / scalar, vector.m_Y / scalar);
         }
 
         /**
@@ -165,7 +165,7 @@ namespace RVO
          */
         public static Vector2 operator +(Vector2 vector1, Vector2 vector2)
         {
-            return new Vector2(vector1.X + vector2.X, vector1.Y + vector2.Y);
+            return new Vector2(vector1.m_X + vector2.m_X, vector1.m_Y + vector2.m_Y);
         }
 
         /**
@@ -180,7 +180,7 @@ namespace RVO
          */
         public static Vector2 operator -(Vector2 vector1, Vector2 vector2)
         {
-            return new Vector2(vector1.X - vector2.X, vector1.Y - vector2.Y);
+            return new Vector2(vector1.m_X - vector2.m_X, vector1.m_Y - vector2.m_Y);
         }
 
         /**
@@ -194,7 +194,7 @@ namespace RVO
          */
         public static Vector2 operator -(Vector2 vector)
         {
-            return new Vector2(-vector.X, -vector.Y);
+            return new Vector2(-vector.m_X, -vector.m_Y);
         }
     }
 }

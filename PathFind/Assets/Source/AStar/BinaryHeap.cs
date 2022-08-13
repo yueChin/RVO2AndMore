@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 public class BinaryHeap
 {
-	private List<AsGrid> gridlist = new List<AsGrid>();
+	private readonly List<AsGrid> m_GridList = new List<AsGrid>();
 	public int Length = 0;
 
 	private void TryDownAt(int index)
@@ -16,10 +16,10 @@ public class BinaryHeap
 		}
 
 		if (childIndex + 1 < Length
-		    && gridlist[(childIndex + 1)].Score < gridlist
+		    && m_GridList[(childIndex + 1)].Score < m_GridList
 			    [(childIndex)].Score)
 		{
-			if (gridlist[(index)].Score > gridlist[(childIndex + 1)].Score)
+			if (m_GridList[(index)].Score > m_GridList[(childIndex + 1)].Score)
 			{
 				SwapAt(index, childIndex + 1);
 				TryDownAt(childIndex + 1);
@@ -29,7 +29,7 @@ public class BinaryHeap
 		else
 		{
 
-			if (gridlist[(index)].Score > gridlist[(childIndex)].Score)
+			if (m_GridList[(index)].Score > m_GridList[(childIndex)].Score)
 			{
 				SwapAt(index, childIndex);
 				TryDownAt(childIndex);
@@ -43,7 +43,7 @@ public class BinaryHeap
 		if (index <= 0)
 			return;
 		int headIndex = (index - 1) / 2;
-		if (gridlist[(index)].Score < gridlist[(headIndex)].Score)
+		if (m_GridList[(index)].Score < m_GridList[(headIndex)].Score)
 		{
 			SwapAt(index, headIndex);
 			TryUpAt(headIndex);
@@ -53,23 +53,23 @@ public class BinaryHeap
 
 	public void Push(AsGrid val)
 	{
-		gridlist.Add(val);
-		Length = gridlist.Count;
+		m_GridList.Add(val);
+		Length = m_GridList.Count;
 		TryUpAt(Length - 1);
 	}
 
 	public void Clear()
 	{
-		gridlist.Clear();
+		m_GridList.Clear();
 		Length = 0;
 	}
 
 	public AsGrid PopMix()
 	{
-		AsGrid val = gridlist[0];
+		AsGrid val = m_GridList[0];
 		SwapAt(0, Length - 1);
-		gridlist.RemoveAt(gridlist.Count - 1);
-		Length = gridlist.Count;
+		m_GridList.RemoveAt(m_GridList.Count - 1);
+		Length = m_GridList.Count;
 		TryDownAt(0);
 		return val;
 
@@ -80,7 +80,7 @@ public class BinaryHeap
 		int index = -1;
 		for (int i = 0; i < Length; i++)
 		{
-			if (gridlist[(i)] == grid)
+			if (m_GridList[(i)] == grid)
 			{
 				index = i;
 				break;
@@ -101,9 +101,9 @@ public class BinaryHeap
 
 	private void SwapAt(int pos1, int pos2)
 	{
-		AsGrid c = gridlist[(pos1)];
-		gridlist[pos1] = gridlist[(pos2)];
-		gridlist[pos2] = c;
+		AsGrid c = m_GridList[(pos1)];
+		m_GridList[pos1] = m_GridList[(pos2)];
+		m_GridList[pos2] = c;
 
 	}
 }

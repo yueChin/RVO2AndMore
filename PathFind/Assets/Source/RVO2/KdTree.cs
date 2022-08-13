@@ -260,15 +260,15 @@ namespace RVO
         {
             m_AgentTree[node].Begin = begin;
             m_AgentTree[node].End = end;
-            m_AgentTree[node].MinX = m_AgentTree[node].MaxX = m_AgentArray[begin].Position.X;
-            m_AgentTree[node].MinY = m_AgentTree[node].MaxY = m_AgentArray[begin].Position.Y;
+            m_AgentTree[node].MinX = m_AgentTree[node].MaxX = m_AgentArray[begin].Position.m_X;
+            m_AgentTree[node].MinY = m_AgentTree[node].MaxY = m_AgentArray[begin].Position.m_Y;
 
             for (int i = begin + 1; i < end; ++i)
             {
-                m_AgentTree[node].MaxX = Math.Max(m_AgentTree[node].MaxX, m_AgentArray[i].Position.X);
-                m_AgentTree[node].MinX = Math.Min(m_AgentTree[node].MinX, m_AgentArray[i].Position.X);
-                m_AgentTree[node].MaxY = Math.Max(m_AgentTree[node].MaxY, m_AgentArray[i].Position.Y);
-                m_AgentTree[node].MinY = Math.Min(m_AgentTree[node].MinY, m_AgentArray[i].Position.Y);
+                m_AgentTree[node].MaxX = Math.Max(m_AgentTree[node].MaxX, m_AgentArray[i].Position.m_X);
+                m_AgentTree[node].MinX = Math.Min(m_AgentTree[node].MinX, m_AgentArray[i].Position.m_X);
+                m_AgentTree[node].MaxY = Math.Max(m_AgentTree[node].MaxY, m_AgentArray[i].Position.m_Y);
+                m_AgentTree[node].MinY = Math.Min(m_AgentTree[node].MinY, m_AgentArray[i].Position.m_Y);
             }
 
             if (end - begin > MaxLeafSize)
@@ -282,12 +282,12 @@ namespace RVO
 
                 while (left < right)
                 {
-                    while (left < right && (isVertical ? m_AgentArray[left].Position.X : m_AgentArray[left].Position.Y) < splitValue)
+                    while (left < right && (isVertical ? m_AgentArray[left].Position.m_X : m_AgentArray[left].Position.m_Y) < splitValue)
                     {
                         ++left;
                     }
 
-                    while (right > left && (isVertical ? m_AgentArray[right - 1].Position.X : m_AgentArray[right - 1].Position.Y) >= splitValue)
+                    while (right > left && (isVertical ? m_AgentArray[right - 1].Position.m_X : m_AgentArray[right - 1].Position.m_Y) >= splitValue)
                     {
                         --right;
                     }
@@ -494,8 +494,8 @@ namespace RVO
             }
             else
             {
-                float distSqLeft = RVOMath.Sqr(Math.Max(0.0f, m_AgentTree[m_AgentTree[node].Left].MinX - agent.Position.X)) + RVOMath.Sqr(Math.Max(0.0f, agent.Position.X - m_AgentTree[m_AgentTree[node].Left].MaxX)) + RVOMath.Sqr(Math.Max(0.0f, m_AgentTree[m_AgentTree[node].Left].MinY - agent.Position.Y)) + RVOMath.Sqr(Math.Max(0.0f, agent.Position.Y - m_AgentTree[m_AgentTree[node].Left].MaxY));
-                float distSqRight = RVOMath.Sqr(Math.Max(0.0f, m_AgentTree[m_AgentTree[node].Right].MinX - agent.Position.X)) + RVOMath.Sqr(Math.Max(0.0f, agent.Position.X - m_AgentTree[m_AgentTree[node].Right].MaxX)) + RVOMath.Sqr(Math.Max(0.0f, m_AgentTree[m_AgentTree[node].Right].MinY - agent.Position.Y)) + RVOMath.Sqr(Math.Max(0.0f, agent.Position.Y - m_AgentTree[m_AgentTree[node].Right].MaxY));
+                float distSqLeft = RVOMath.Sqr(Math.Max(0.0f, m_AgentTree[m_AgentTree[node].Left].MinX - agent.Position.m_X)) + RVOMath.Sqr(Math.Max(0.0f, agent.Position.m_X - m_AgentTree[m_AgentTree[node].Left].MaxX)) + RVOMath.Sqr(Math.Max(0.0f, m_AgentTree[m_AgentTree[node].Left].MinY - agent.Position.m_Y)) + RVOMath.Sqr(Math.Max(0.0f, agent.Position.m_Y - m_AgentTree[m_AgentTree[node].Left].MaxY));
+                float distSqRight = RVOMath.Sqr(Math.Max(0.0f, m_AgentTree[m_AgentTree[node].Right].MinX - agent.Position.m_X)) + RVOMath.Sqr(Math.Max(0.0f, agent.Position.m_X - m_AgentTree[m_AgentTree[node].Right].MaxX)) + RVOMath.Sqr(Math.Max(0.0f, m_AgentTree[m_AgentTree[node].Right].MinY - agent.Position.m_Y)) + RVOMath.Sqr(Math.Max(0.0f, agent.Position.m_Y - m_AgentTree[m_AgentTree[node].Right].MaxY));
 
                 if (distSqLeft < distSqRight)
                 {

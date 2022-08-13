@@ -8,7 +8,7 @@ public class Sphere : MonoBehaviour
     public bool Debug = false;
 
     // Gizmos
-    public List<Line> msGizmosLines = new List<Line>();
+    public List<Line> m_GizmosLines = new List<Line>();
     public int msId;
     public RVO.Vector2 msVelocity;
 
@@ -24,23 +24,23 @@ public class Sphere : MonoBehaviour
         // ORCA
         Vector3 from;
         Vector3 to;
-        foreach (Line msGizmosLine in msGizmosLines)
+        foreach (Line msGizmosLine in m_GizmosLines)
         {
             RVO.Vector2 from_ = msGizmosLine.Point - msGizmosLine.Direction * 100;
             RVO.Vector2 to_ = msGizmosLine.Point + msGizmosLine.Direction * 100;
 
-            from = transform.position + new Vector3(from_.x(), 0, from_.y());
-            to = transform.position + new Vector3(to_.x(), 0, to_.y());
+            from = transform.position + new Vector3(from_.X(), 0, from_.Y());
+            to = transform.position + new Vector3(to_.X(), 0, to_.Y());
 
             Gizmos.DrawLine(from, to);
         }
 
-        msGizmosLines.Clear();
+        m_GizmosLines.Clear();
         // velocity
         Gizmos.color = Color.green;
 
         from = transform.position;
-        to = transform.position + new Vector3(msVelocity.x(), 0, msVelocity.y());
+        to = transform.position + new Vector3(msVelocity.X(), 0, msVelocity.Y());
 
         Gizmos.DrawLine(from, to);
     }

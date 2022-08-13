@@ -135,7 +135,7 @@ GameObject:
   - component: {fileID: 146015124}
   - component: {fileID: 146015123}
   - component: {fileID: 146015122}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Cube (1)
   m_TagString: obstacle
   m_Icon: {fileID: 0}
@@ -325,7 +325,7 @@ GameObject:
   - component: {fileID: 816773157}
   - component: {fileID: 816773156}
   - component: {fileID: 816773155}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Cube
   m_TagString: obstacle
   m_Icon: {fileID: 0}
@@ -646,5 +646,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5bd7af25a4ed114ebc1ef1d303cab85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  row: 150
+  col: 120
+  m_Layer:
+    serializedVersion: 2
+    m_Bits: 4
   mSpherePrefab01: {fileID: 1771118270105196, guid: 9f3b1874caa07334e9a70bd8125b058d, type: 3}
   mSpherePrefab02: {fileID: 1771118270105196, guid: b9328db7997827c428454d23b260b9e6, type: 3}
+  Speed: 3
+  Space: 1.1
+  N: 20

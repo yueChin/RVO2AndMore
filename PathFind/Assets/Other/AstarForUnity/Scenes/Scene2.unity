@@ -233,7 +233,7 @@ GameObject:
   - component: {fileID: 117688703}
   - component: {fileID: 117688702}
   - component: {fileID: 117688701}
-  m_Layer: 8
+  m_Layer: 2
   m_Name: Sphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -618,7 +618,7 @@ GameObject:
   - component: {fileID: 864265366}
   - component: {fileID: 864265365}
   - component: {fileID: 864265364}
-  m_Layer: 8
+  m_Layer: 2
   m_Name: Cube (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -715,7 +715,7 @@ GameObject:
   - component: {fileID: 1131481128}
   - component: {fileID: 1131481127}
   - component: {fileID: 1131481126}
-  m_Layer: 8
+  m_Layer: 2
   m_Name: Cube (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -852,7 +852,7 @@ MonoBehaviour:
   m_NodeRadius: 0.2
   m_Layer:
     serializedVersion: 2
-    m_Bits: 256
+    m_Bits: 4
 --- !u!114 &1233492174
 MonoBehaviour:
   m_ObjectHideFlags: 0

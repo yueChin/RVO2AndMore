@@ -56,7 +56,7 @@ namespace RVO {
             m_Center = Position;//目前中心点就是包围圆的坐标点
             Mass += agent.Mass;
             Vector2 diamV2 = (m_PadMax - m_PadMin);
-            Radius = Mathf.Sqrt(diamV2.X * diamV2.X + diamV2.Y * diamV2.Y) / 2 ;
+            Radius = Mathf.Sqrt(diamV2.m_X * diamV2.m_X + diamV2.m_Y * diamV2.m_Y) / 2 ;
         }
 
         internal Agent RemoveChild(int id)
@@ -76,8 +76,8 @@ namespace RVO {
             {
                 agent = m_ChildList[idx];
                 Mass -= agent.Mass;
-                if ((agent.Position.X == m_PadMin.X) || (agent.Position.X == m_PadMax.X)
-                    ||(agent.Position.Y == m_PadMin.Y) || (agent.Position.Y == m_PadMax.Y))
+                if ((agent.Position.m_X == m_PadMin.m_X) || (agent.Position.m_X == m_PadMax.m_X)
+                    ||(agent.Position.m_Y == m_PadMin.m_Y) || (agent.Position.m_Y == m_PadMax.m_Y))
                 {
                     ReCaculCircular();
                 }
@@ -101,22 +101,22 @@ namespace RVO {
             Position = (m_PadMin + m_PadMax) / 2;
             m_Center = Position;//目前中心点就是包围圆的坐标点
             Vector2 diamV2 = (m_PadMax - m_PadMin);
-            Radius = Mathf.Sqrt(diamV2.X * diamV2.X + diamV2.Y * diamV2.Y) / 2 ;
+            Radius = Mathf.Sqrt(diamV2.m_X * diamV2.m_X + diamV2.m_Y * diamV2.m_Y) / 2 ;
         }
 
         internal void CaculCircular(Agent agent)
         {
             float minX = 0, minY = 0;
-            minX = m_PadMin.X > agent.Position.X ? agent.Position.X : m_PadMin.X;
-            minY = m_PadMin.Y > agent.Position.Y ? agent.Position.Y : m_PadMin.Y;
+            minX = m_PadMin.m_X > agent.Position.m_X ? agent.Position.m_X : m_PadMin.m_X;
+            minY = m_PadMin.m_Y > agent.Position.m_Y ? agent.Position.m_Y : m_PadMin.m_Y;
             if (minX != 0 || minY != 0)
             {
                 m_PadMin = new Vector2(minX, minY);
             }
             
             float maxX = 0, maxY = 0;
-            maxX = m_PadMax.X < agent.Position.X ? agent.Position.X : m_PadMax.X;
-            maxY = m_PadMax.Y < agent.Position.Y ? agent.Position.Y : m_PadMax.Y;
+            maxX = m_PadMax.m_X < agent.Position.m_X ? agent.Position.m_X : m_PadMax.m_X;
+            maxY = m_PadMax.m_Y < agent.Position.m_Y ? agent.Position.m_Y : m_PadMax.m_Y;
             if (minX != 0 || minY != 0)
             {
                 m_PadMax = new Vector2(maxX, maxY);
@@ -144,7 +144,7 @@ namespace RVO {
             }
             
             ////////////////////////////////////////////////////////////////////////////////////////////////
-            Test01.m_SphereScritps[ID].msVelocity = Velocity;
+            Test01.m_SphereList[ID].msVelocity = Velocity;
             ////////////////////////////////////////////////////////////////////////////////////////////////
         }
     }
