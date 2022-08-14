@@ -38,7 +38,7 @@ namespace RVO {
     /**
      * <summary>Defines an agent in the simulation.</summary>
      */
-    public class Group : Agent
+    public class Group : Agent //TODO 更精确的方阵避障
     {
         internal List<Agent> m_ChildList = new List<Agent>();
         internal Vector2 m_Center;

@@ -471,40 +471,18 @@ namespace RVO
 
             int numObstLines = OrcaLines.Count;
 
-            if (PrefVelocity.X() >= 0.01 || PrefVelocity.Y() >= 0.01)
+            //if (PrefVelocity.X() >= 0.01 || PrefVelocity.Y() >= 0.01) //TODO 新增群组的避障
             {
                 /* Create agent ORCA lines. */
-                for (int i = 0; i < AgentNeighborList.Count; ++i)
+                for (int i = 0; i < AgentNeighborList.Count; ++i) 
                 {
                     Agent other = AgentNeighborList[i].Value;
 
                     computeAgentNeighbors(other);
                     continue;
-                    if (other.PrefVelocity.X() < 0.01f && other.PrefVelocity.Y() < 0.01f)
-                    {
-                        ObstacleTemp temp1 = new ObstacleTemp()
-                        {
-                            Point = Position,
-                            Direction = PrefVelocity,
-                            Convex = false,
-                            PrevDirection = Vector2.Zero
-                        };
-                        ObstacleTemp temp2 = new ObstacleTemp()
-                        {
-                            Point = Position,
-                            Direction = PrefVelocity,
-                            Convex = false,
-                            PrevDirection = Vector2.Zero
-                        };
-                        ComputeObstacleNeighbors(temp1, temp2, false);
-                    }
-                    else
-                    {
-                        computeAgentNeighbors(other);
-                    }
                 }
             }
-
+            
             if (Mass != 1)
             {
                 int i = 1;

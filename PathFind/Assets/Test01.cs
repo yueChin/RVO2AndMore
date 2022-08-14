@@ -7,6 +7,7 @@ using Vector2 = RVO.Vector2;
 public class Test01 : MonoBehaviour
 {
 
+    public Transform worldRoot;
     //-----------AStar
     public int row = 222;
     public int col = 222;
@@ -20,7 +21,7 @@ public class Test01 : MonoBehaviour
     public GameObject mSpherePrefab01;
     public GameObject mSpherePrefab02;
     public float Speed = 3f;
-    public float Space = 1.1f;
+    public float Space = 1f;
     public int N = 20;//方阵长宽
     private IList<AstarAgent> m_AstarAgentList;
     System.Random m_Random;
@@ -74,8 +75,8 @@ public class Test01 : MonoBehaviour
 
         // 创建小球
         Simulator.Instance.SetAgentDefaults(10.0f, 10, 1f, 1.0f, 0.5f, Speed, new RVO.Vector2(0.0f, 0.0f));
-        //CreateSquad(new Vector3(-30, 0, 0), mSpherePrefab01, 1f);
-        //CreateSquad(new Vector3(30, 0, 0), mSpherePrefab02, 1f);
+        CreateSquad(new Vector3(-30, 0, 0), mSpherePrefab01, 1f);
+        CreateSquad(new Vector3(30, 0, 0), mSpherePrefab02, 1f);
 
         //CreateGroup(new Vector3(0, 0, -20), mSpherePrefab02, 1f);
         
@@ -100,7 +101,12 @@ public class Test01 : MonoBehaviour
                 int id = Simulator.Instance.GetDefaultAgent(p);
                 Simulator.Instance.SetWorldAgentMass(id, mass);
                 // 物体
-                GameObject g = GameObject.Instantiate(spherePrefab);
+                GameObject g = GameObject.Instantiate(spherePrefab, this.worldRoot, false);
+                GameObject child = new GameObject();
+                child.transform.SetParent(g.transform);
+                TextMesh textMesh = child.AddComponent<TextMesh>();
+                textMesh.text = $"{i  + j * N}";
+                textMesh.characterSize = 0.5f;
                 AstarAgent aa = g.AddComponent<AstarAgent>();
                 m_AstarAgentList.Add(aa);
                 g.transform.localScale = g.transform.localScale * 0.5f;
@@ -118,7 +124,7 @@ public class Test01 : MonoBehaviour
         int id = Simulator.Instance.GetDefaultAgent(p);
         Simulator.Instance.SetWorldAgentMass(id, 2.5f);
         // 物体
-        GameObject g = GameObject.Instantiate(mSpherePrefab01);
+        GameObject g = GameObject.Instantiate(mSpherePrefab01, this.worldRoot, false);
         AstarAgent aa = g.AddComponent<AstarAgent>();
         m_AstarAgentList.Add(aa);
         g.transform.localScale = new Vector3(diamV2, diamV2, diamV2);
@@ -145,7 +151,7 @@ public class Test01 : MonoBehaviour
                 group.AddChild(agent);
                 // 目标点
                 // 物体
-                GameObject g = GameObject.Instantiate(spherePrefab);
+                GameObject g = GameObject.Instantiate(spherePrefab, this.worldRoot, false);
                 AstarAgent aa = g.AddComponent<AstarAgent>();
                 g.transform.localScale = g.transform.localScale * 0.5f;
                 m_SphereList.Add(g.AddComponent<Sphere>());
@@ -262,7 +268,7 @@ public class Test01 : MonoBehaviour
     
     private void OnDrawGizmosSelected()
     {
-        Gizmos.DrawWireCube(transform.position, new Vector3(col, 1, row));
+        Gizmos.DrawWireCube(transform.position, new Vector3(col, -1, row));
 
         if (m_MapData != null)
         {
@@ -272,7 +278,7 @@ public class Test01 : MonoBehaviour
                 {
                     bool isCanWalk = m_MapData[i][j] == 0;
                     Gizmos.color = isCanWalk? Color.white : Color.red;
-                    Gizmos.DrawCube(new Vector3(i - m_HalfCol,0,j - m_HalfRow), Vector3.one * (0.6f - 0.1f));
+                    Gizmos.DrawCube(new Vector3(i - m_HalfCol,-1,j - m_HalfRow), Vector3.one * (0.6f - 0.1f));
                 }
             }
         }
@@ -288,7 +294,7 @@ public class Test01 : MonoBehaviour
                 foreach (AStarPosVo vo in astarAgent.PosList)
                 {
                     Gizmos.color = Color.green;
-                    Gizmos.DrawCube(new Vector3(vo.X- m_HalfCol,0,vo.Y- m_HalfRow), Vector3.one * (0.6f - 0.1f));
+                    Gizmos.DrawCube(new Vector3(vo.X- m_HalfCol,-1,vo.Y- m_HalfRow), Vector3.one * (0.6f - 0.1f));
                 }
             }
         }
