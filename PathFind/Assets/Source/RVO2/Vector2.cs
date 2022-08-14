@@ -41,6 +41,10 @@ namespace RVO
     public struct Vector2
     {
         public static readonly Vector2 Zero = new Vector2(0.0f, 0.0f);
+        public static readonly Vector2 Left = new Vector2(-1.0f, 0.0f);
+        public static readonly Vector2 Right = new Vector2(1.0f, 0.0f);
+        public static readonly Vector2 Up = new Vector2(0.0f, 1.0f);
+        public static readonly Vector2 Down = new Vector2(0.0f, -1.0f);
         public static readonly Vector2 MAX = new Vector2(float.MaxValue, float.MaxValue);
         public static readonly Vector2 MIN = new Vector2(float.MinValue, float.MinValue);
         internal float m_X;
@@ -195,6 +199,16 @@ namespace RVO
         public static Vector2 operator -(Vector2 vector)
         {
             return new Vector2(-vector.m_X, -vector.m_Y);
+        }
+        
+        public static bool operator ==(Vector2 vectorA,Vector2 vectorB)
+        {
+            return Math.Abs(vectorA.X() - vectorB.X()) < 0.01f || Math.Abs(vectorA.Y() - vectorB.Y()) < 0.01f;
+        }
+        
+        public static bool operator !=(Vector2 vectorA,Vector2 vectorB)
+        {
+            return Math.Abs(vectorA.X() - vectorB.X()) > 0.01f || Math.Abs(vectorA.Y() - vectorB.Y()) > 0.01f;
         }
     }
 }

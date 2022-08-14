@@ -40,10 +40,10 @@ public class Test01 : MonoBehaviour
             {
                 bool canWalk = !Physics.CheckSphere(new Vector3(i - m_HalfCol,0,j - m_HalfRow), 0.2f, m_Layer);
                 m_MapData[i][j] = canWalk ? (byte)0 : (byte)1;
-                if (!canWalk)
-                {
-                    Debug.LogError($"can {canWalk }           i:{i} j:{j}");
-                }
+                // if (!canWalk)
+                // {
+                //     Debug.LogError($"can {canWalk }           i:{i} j:{j}");
+                // }
             }
         }
 
@@ -80,8 +80,8 @@ public class Test01 : MonoBehaviour
         //CreateGroup(new Vector3(0, 0, -20), mSpherePrefab02, 1f);
         
         // 创建大球
-        //CreateGameObject(new Vector3(0, 0, 60), mSpherePrefab02, 1F);
-        //CreateGameObject(new Vector3(0, 0, 61), mSpherePrefab02, 1F);
+        CreateGameObject(new Vector3(0, 0, 60), mSpherePrefab02, 1F);
+        CreateGameObject(new Vector3(0, 0, 61), mSpherePrefab02, 1F);
         //CreateGameObject(new Vector3(0, 0, 20), mSpherePrefab02, 30f);
         CreateGameObject(new Vector3(0, 0, 50), mSpherePrefab02, 1F);
         
@@ -240,12 +240,10 @@ public class Test01 : MonoBehaviour
             return;
         for (int i = 0; i < Simulator.Instance.GetNumAgents(); ++i)
         {
-            if (m_AstarAgentList[i].PosList != null && m_AstarAgentList[i].PosList.Count > 0)
+            if (m_AstarAgentList[i].m_HaveBeenFind)
             {
                 Vector2 next = m_AstarAgentList[i].GetNextPosInAstar(new Vector2(m_HalfCol, m_HalfRow));
                 RVO.Vector2 goalVector =  next - Simulator.Instance.GetAgentPosition(i);
-                //Debug.LogError($"{m_AstarAgentList[i].transform.position} 当前位置   +  agent位置 {Simulator.Instance.GetAgentPosition(i)}");
-                //Debug.LogError(goalVector + "向量                     下一个坐标 " +  next);
                 if (RVOMath.ABSSq(goalVector) > 1.0f)//新坐标点和当前位置有插值才会给向量
                 {
                     goalVector = RVOMath.Normalize(goalVector) * Speed;
