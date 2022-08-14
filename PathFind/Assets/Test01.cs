@@ -250,10 +250,11 @@ public class Test01 : MonoBehaviour
             {
                 Vector2 next = m_AstarAgentList[i].GetNextPosInAstar(new Vector2(m_HalfCol, m_HalfRow));
                 RVO.Vector2 goalVector =  next - Simulator.Instance.GetAgentPosition(i);
-                if (RVOMath.ABSSq(goalVector) > 1.0f)//新坐标点和当前位置有插值才会给向量
+                if (RVOMath.ABS(goalVector) > 1.0f)//新坐标点和当前位置有插值才会给向量
                 {
                     goalVector = RVOMath.Normalize(goalVector) * Speed;
                 }
+              
                 Simulator.Instance.SetAgentPrefVelocity(i, goalVector);
 
                 float angle = (float)m_Random.NextDouble() * 2.0f * (float)Math.PI;

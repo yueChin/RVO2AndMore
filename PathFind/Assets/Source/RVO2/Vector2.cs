@@ -210,5 +210,14 @@ namespace RVO
         {
             return Math.Abs(vectorA.X() - vectorB.X()) > 0.01f || Math.Abs(vectorA.Y() - vectorB.Y()) > 0.01f;
         }
+        
+        public void Normalize()
+        {
+            float magnitude = (float) Math.Sqrt(this.m_X * this.m_X + this.m_Y * this.m_Y);
+            if ((double) magnitude > 9.99999974737875E-06)
+                this /= magnitude;
+            else
+                this = Vector2.Zero;
+        }
     }
 }
